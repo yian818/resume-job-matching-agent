@@ -7,6 +7,10 @@ from pydantic import BaseModel, Field
 from state import AgentState
 from database import get_all_jobs
 from scoring_rules import SCORING_RULES
+import logging
+
+
+
 # 从.env文件读取配置
 load_dotenv()
 
