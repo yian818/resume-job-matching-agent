@@ -8,6 +8,7 @@ class AgentState(TypedDict):
     # 匹配到的岗位列表
     jobs: List[dict]
     # 匹配报告
+    # 匹配报告
     report: str
     # 错误信息
     error: Optional[str]

@@ -83,18 +83,20 @@ def match_jobs_node(state: AgentState) -> AgentState:
 2. 核心技能优势
 3. 匹配到的岗位列表，逐个给出匹配度评分(0-100)和理由
 4. 短板分析和建议"""
-    
+     # 如果信息不完整，在报告开头标注
     if not state['info_complete']:
-        state['report'] = "候选人信息不完整，无法进行岗位匹配。"
-        print(state['report'])
-        return state
+        prefix = "⚠️ 注意：候选人简历信息不完整（工作年限缺失），以下匹配结果基于现有信息，仅供参考。\n\n"
+    else:
+        prefix = ""
+
     
         # 错误重试：最多3次
     max_retries = 3
     for attempt in range(max_retries):
         try:
             response = llm.invoke(prompt)
-            state['report'] = response.content
+            state['report'] = prefix + response.content
+
             print("报告生成完成")
             break
         except Exception as e:
