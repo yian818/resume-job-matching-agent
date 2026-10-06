@@ -1,4 +1,16 @@
 from langgraph.graph import StateGraph, END
+import logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.FileHandler('agent.log', encoding='utf-8'),
+        logging.StreamHandler()
+    ]
+)
+
+logger = logging.getLogger(__name__)
+
 from nodes import extract_resume_node, match_jobs_node, ask_more_node
 from resume_parser import read_pdf
 
@@ -52,7 +64,7 @@ if __name__ == "__main__":
         "info_complete": True
     })
     
-    print("\n" + "="*50)
-    print("最终匹配报告：")
-    print("="*50)
-    print(result["report"])
+    logger.info("\n" + "="*50)
+    logger.info("最终匹配报告：")
+    logger.info("="*50)
+    logger.info(result["report"])
