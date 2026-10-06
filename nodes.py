@@ -6,7 +6,7 @@ from langchain_openai import ChatOpenAI
 from pydantic import BaseModel, Field
 from state import AgentState
 from database import get_all_jobs
-
+from scoring_rules import SCORING_RULES
 # 从.env文件读取配置
 load_dotenv()
 
@@ -77,6 +77,12 @@ def match_jobs_node(state: AgentState) -> AgentState:
 
 岗位列表：岗位列表（共{len(jobs)}个岗位，必须逐个分析完，不能遗漏任何一个）：
 {job_list_text}
+打分规则（总分100）：
+- 技能匹配（权重40%）：岗位要求技能与候选人技能重合度
+- 学历匹配（权重10%）：本科及以上满足要求
+- 工作年限（权重30%）：候选人年限与岗位要求差距
+- 项目相关度（权重20%）：项目经历与岗位方向相关性
+
 
 输出markdown格式报告：
 1. 候选人基本信息摘要
