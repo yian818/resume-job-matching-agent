@@ -34,14 +34,23 @@ def extract_resume_node(state: AgentState) -> AgentState:
 {{"name":"姓名","education":"学历","work_year":"工作年限","skill":"技术栈","project":"项目经历"}}
 只输出JSON，不要解释。"""
     
-    response = llm.invoke(prompt)
-    try:
-        resume_info = json.loads(response.content)
-        state['resume_info'] = resume_info
-        print(f"抽取成功：{resume_info}")
-    except Exception as e:
-        state['error'] = f"简历解析失败：{e}"
-        print(f"错误：{e}")
+        # 用Pydantic结构化输出，大模型直接返回对象
+    structured_llm = llm.with_structured_output(ResumeInfo)
+    result = structured_llm.invoke(prompt)
+    
+    # result就是一个ResumeInfo对象，直接转成字典存到state里
+    state['resume_info'] = result.dict()
+
+        # 判断信息是否完整
+    if "【信息缺失】" in result.work_year:
+        state['info_complete'] = False
+    else:
+        state['info_complete'] = True
+    print(f"信息完整度：{state['info_complete']}")
+
+    print(f"抽取成功：{state['resume_info']}")
+
+
     
     return state
 
@@ -52,7 +61,8 @@ def match_jobs_node(state: AgentState) -> AgentState:
     # 模拟岗位库
     jobs = get_all_jobs()
     state['jobs'] = jobs
-    
+    job_list_text = "\n".join([f"{i+1}. {j['title']}（{j['department']}）- 要求{j['required_years']}年，技能：{j['required_skills']}" for i, j in enumerate(jobs)])
+
     resume_info = state.get('resume_info', {})
     prompt = f"""你是招聘岗位匹配分析师。基于以下候选人简历信息和岗位列表，必须对岗位列表中的每一个岗位都进行分析，不能遗漏,生成匹配评估报告。
 
@@ -60,8 +70,7 @@ def match_jobs_node(state: AgentState) -> AgentState:
 {json.dumps(resume_info, ensure_ascii=False)}
 
 岗位列表：岗位列表（共{len(jobs)}个岗位，必须逐个分析完，不能遗漏任何一个）：
-
-{json.dumps(jobs, ensure_ascii=False)}
+{job_list_text}
 
 输出markdown格式报告：
 1. 候选人基本信息摘要
@@ -69,7 +78,18 @@ def match_jobs_node(state: AgentState) -> AgentState:
 3. 匹配到的岗位列表，逐个给出匹配度评分(0-100)和理由
 4. 短板分析和建议"""
     
+    if not state['info_complete']:
+        state['report'] = "候选人信息不完整，无法进行岗位匹配。"
+        print(state['report'])
+        return state
+    
     response = llm.invoke(prompt)
     state['report'] = response.content
     print("报告生成完成")
+    return state
+
+def ask_more_node(state: AgentState) -> AgentState:
+    """信息不完整，追问用户补充"""
+    print("=== 追问用户补充信息 ===")
+    state['report'] = "你的简历信息不完整，缺少工作年限。请补充你的工作/实习经历后再进行匹配。"
     return state

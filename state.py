@@ -11,3 +11,5 @@ class AgentState(TypedDict):
     report: str
     # 错误信息
     error: Optional[str]
+    
+    info_complete:bool
