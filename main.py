@@ -11,7 +11,7 @@ logging.basicConfig(
 
 logger = logging.getLogger(__name__)
 
-from nodes import extract_resume_node, match_jobs_node, ask_more_node
+from nodes import extract_resume_node, match_jobs_node, ask_more_node, resume_optimize_node, interview_question_node
 from resume_parser import read_pdf
 
 
@@ -24,6 +24,8 @@ def build_agent():
     workflow = StateGraph(AgentState)
     
     # 添加节点
+    workflow.add_node("resume_optimize", resume_optimize_node)
+    workflow.add_node("interview_question", interview_question_node)
     workflow.add_node("ask_more", ask_more_node)
     workflow.add_node("extract_resume", extract_resume_node)
     workflow.add_node("match_jobs", match_jobs_node)
@@ -44,7 +46,10 @@ def build_agent():
     workflow.add_edge("ask_more", END)
 
 
-    workflow.add_edge("match_jobs", END)
+    workflow.add_edge("match_jobs", "resume_optimize")
+    workflow.add_edge("resume_optimize", "interview_question")
+    workflow.add_edge("interview_question", END)
+ 
     
     return workflow.compile()
 

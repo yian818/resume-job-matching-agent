@@ -7,12 +7,25 @@ from pydantic import BaseModel, Field
 from state import AgentState
 from database import get_all_jobs
 from scoring_rules import SCORING_RULES
-import logging
+
 
 
 
 # 从.env文件读取配置
 load_dotenv()
+
+import logging
+
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.FileHandler('agent.log', encoding='utf-8'),
+        logging.StreamHandler()
+    ]
+)
+logger = logging.getLogger(__name__)
+
 
 llm = ChatOpenAI(
     model=os.getenv("MODEL_NAME"),
@@ -32,7 +45,7 @@ class ResumeInfo(BaseModel):
 
 def extract_resume_node(state: AgentState) -> AgentState:
     """节点1：从简历文本抽取结构化信息"""
-    print("=== 节点1：抽取简历信息 ===")
+    logger.info("=== 节点1：抽取简历信息 ===")
     
     prompt = f"""你是简历信息提取器。从以下简历文本中提取候选人信息，严格输出JSON格式。
 如果某个信息找不到，值填"【信息缺失】"。
@@ -56,9 +69,9 @@ def extract_resume_node(state: AgentState) -> AgentState:
         state['info_complete'] = False
     else:
         state['info_complete'] = True
-    print(f"信息完整度：{state['info_complete']}")
+    logger.info(f"信息完整度：{state['info_complete']}")
 
-    print(f"抽取成功：{state['resume_info']}")
+    logger.info(f"抽取成功：{state['resume_info']}")
 
 
     
@@ -66,7 +79,7 @@ def extract_resume_node(state: AgentState) -> AgentState:
 
 def match_jobs_node(state: AgentState) -> AgentState:
     """节点2：匹配岗位并打分"""
-    print("=== 节点2：岗位匹配打分 ===")
+    logger.info("=== 节点2：岗位匹配打分 ===")
     
     # 模拟岗位库
     jobs = get_all_jobs()
@@ -93,7 +106,25 @@ def match_jobs_node(state: AgentState) -> AgentState:
 2. 核心技能优势
 3. 匹配到的岗位列表，逐个给出匹配度评分(0-100)和理由
 4. 短板分析和建议"""
-     # 如果信息不完整，在报告开头标注
+    logger.info(f"开始匹配岗位，候选人信息：{resume_info}")
+
+        # 错误重试：最多3次
+    max_retries = 3
+    for attempt in range(max_retries):
+        try:
+            response = llm.invoke(prompt)
+            state['report'] = response.content
+            logger.info("报告生成完成")
+            break
+        except Exception as e:
+            logger.error(f"第{attempt+1}次调用失败：{e}")
+            if attempt == max_retries - 1:
+                state['report'] = "系统错误，匹配失败，请稍后重试"
+            else:
+                import time
+                time.sleep(2)
+
+        # 如果信息不完整，在报告开头标注
     if not state['info_complete']:
         prefix = "⚠️ 注意：候选人简历信息不完整（工作年限缺失），以下匹配结果基于现有信息，仅供参考。\n\n"
     else:
@@ -107,10 +138,10 @@ def match_jobs_node(state: AgentState) -> AgentState:
             response = llm.invoke(prompt)
             state['report'] = prefix + response.content
 
-            print("报告生成完成")
+            logger.info("报告生成完成")
             break
         except Exception as e:
-            print(f"第{attempt+1}次调用失败：{e}")
+            logger.error(f"第{attempt+1}次调用失败：{e}")
             if attempt == max_retries - 1:
                 state['report'] = "系统错误，匹配失败，请稍后重试"
             else:
@@ -121,6 +152,41 @@ def match_jobs_node(state: AgentState) -> AgentState:
 
 def ask_more_node(state: AgentState) -> AgentState:
     """信息不完整，追问用户补充"""
-    print("=== 追问用户补充信息 ===")
+    logger.info("=== 追问用户补充信息 ===")
     state['report'] = "你的简历信息不完整，缺少工作年限。请补充你的工作/实习经历后再进行匹配。"
+    return state
+
+def resume_optimize_node(state: AgentState) -> AgentState:
+    """节点3：简历优化建议"""
+    print("=== 节点3：简历优化建议 ===")
+    resume_info = state.get('resume_info', {})
+    prompt = f"""你是简历优化专家。基于以下候选人信息，给出3-5条具体的简历优化建议：
+    
+    候选人信息：
+    {json.dumps(resume_info, ensure_ascii=False)}
+    
+    输出markdown格式：
+    1. 每条建议包含问题和具体改法
+    2. 建议要具体，不要空泛
+    """
+    response = llm.invoke(prompt)
+    state['report'] += "\n\n---\n\n## 简历优化建议\n\n" + response.content
+    return state
+
+def interview_question_node(state: AgentState) -> AgentState:
+    """节点4：生成模拟面试题"""
+    logger.info("=== 节点4：生成模拟面试题 ===")
+    resume_info = state.get('resume_info', {})
+    prompt = f"""你是技术面试官。基于以下候选人信息，生成5道模拟面试题：
+    
+    候选人信息：
+    {json.dumps(resume_info, ensure_ascii=False)}
+    
+    要求：
+    1. 3道技术题（针对候选人技能栈）
+    2. 2道项目题（针对候选人项目经历）
+    3. 每道题给出考察点
+    """
+    response = llm.invoke(prompt)
+    state['report'] += "\n\n---\n\n## 模拟面试题\n\n" + response.content
     return state
