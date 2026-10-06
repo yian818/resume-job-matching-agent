@@ -68,3 +68,7 @@ if __name__ == "__main__":
     logger.info("最终匹配报告：")
     logger.info("="*50)
     logger.info(result["report"])
+# 保存报告到文件
+with open("匹配报告.md", "w", encoding="utf-8") as f:
+    f.write(result['report'])
+logger.info("报告已保存到：匹配报告.md")
