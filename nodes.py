@@ -1,16 +1,22 @@
+import os
 import json
+import time
+from dotenv import load_dotenv
 from langchain_openai import ChatOpenAI
 from pydantic import BaseModel, Field
 from state import AgentState
 from database import get_all_jobs
 
-# 配置大模型（用DeepSeek，兼容OpenAI接口）
+# 从.env文件读取配置
+load_dotenv()
+
 llm = ChatOpenAI(
-    model="deepseek-v4.1-flash",
-    base_url="https://nb.deepsb.com/v1",
-    api_key="sk-2c75082e7205130e4402ad83ef07480f5c7549043bbeae78db8220b3e82bd1d1",
+    model=os.getenv("MODEL_NAME"),
+    base_url=os.getenv("OPENAI_BASE_URL"),
+    api_key=os.getenv("OPENAI_API_KEY"),
     temperature=0.1
 )
+
 
 # 定义简历结构化输出模型
 class ResumeInfo(BaseModel):
@@ -83,9 +89,22 @@ def match_jobs_node(state: AgentState) -> AgentState:
         print(state['report'])
         return state
     
-    response = llm.invoke(prompt)
-    state['report'] = response.content
-    print("报告生成完成")
+        # 错误重试：最多3次
+    max_retries = 3
+    for attempt in range(max_retries):
+        try:
+            response = llm.invoke(prompt)
+            state['report'] = response.content
+            print("报告生成完成")
+            break
+        except Exception as e:
+            print(f"第{attempt+1}次调用失败：{e}")
+            if attempt == max_retries - 1:
+                state['report'] = "系统错误，匹配失败，请稍后重试"
+            else:
+                import time
+                time.sleep(2)
+
     return state
 
 def ask_more_node(state: AgentState) -> AgentState:
