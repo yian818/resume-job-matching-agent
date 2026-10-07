@@ -84,63 +84,91 @@ def extract_resume_node(state: AgentState) -> AgentState:
 
     return state
 
+# 岗位匹配打分模型
+class JobMatchScore(BaseModel):
+    job_title: str = Field(alias="岗位名称")
+    score: int = Field(alias="匹配分数")
+    reason: str = Field(alias="理由")
+
+    class Config:
+        populate_by_name = True
+
+class JobMatchResult(BaseModel):
+    matches: list[JobMatchScore] = Field(description="所有岗位的匹配打分列表")
+
 def match_jobs_node(state: AgentState) -> AgentState:
-    """节点2：匹配岗位并打分"""
+    """节点2：匹配岗位并打分（结构化输出）"""
     logger.info("=== 节点2：岗位匹配打分 ===")
-    
-    # 模拟岗位库
+
     jobs = get_all_jobs()
     state['jobs'] = jobs
     job_list_text = "\n".join([f"{i+1}. {j['title']}（{j['department']}）- 要求{j['required_years']}年，技能：{j['required_skills']}" for i, j in enumerate(jobs)])
 
     resume_info = state.get('resume_info', {})
-    prompt = f"""你是招聘岗位匹配分析师。基于以下候选人简历信息和岗位列表，必须对岗位列表中的每一个岗位都进行分析，不能遗漏,生成匹配评估报告。
+    prompt = f"""你是招聘岗位匹配分析师。基于以下候选人简历信息和岗位列表，对每个岗位打分。
 
 候选人简历：
 {json.dumps(resume_info, ensure_ascii=False)}
 
-岗位列表：岗位列表（共{len(jobs)}个岗位，必须逐个分析完，不能遗漏任何一个）：
+岗位列表（共{len(jobs)}个）：
 {job_list_text}
+
 打分规则（总分100）：
 - 技能匹配（权重40%）：岗位要求技能与候选人技能重合度
 - 学历匹配（权重10%）：本科及以上满足要求
 - 工作年限（权重30%）：候选人年限与岗位要求差距
 - 项目相关度（权重20%）：项目经历与岗位方向相关性
 
+输出JSON格式：{{"matches":[{{"岗位名称":"AI Agent工程师","匹配分数":85,"理由":"技能高度匹配"}}]}}"""
 
-输出markdown格式报告：
-1. 候选人基本信息摘要
-2. 核心技能优势
-3. 匹配到的岗位列表，逐个给出匹配度评分(0-100)和理由
-4. 短板分析和建议"""
     logger.info(f"开始匹配岗位，候选人信息：{resume_info}")
 
-        # 错误重试：最多3次
-    max_retries = 3
-    for attempt in range(max_retries):
-        try:
-            response = llm.invoke(prompt)
-            state['report'] = response.content
-            logger.info("报告生成完成")
-            break
-        except Exception as e:
-            logger.error(f"第{attempt+1}次调用失败：{e}")
-            if attempt == max_retries - 1:
-                state['report'] = "系统错误，匹配失败，请稍后重试"
-            else:
-                import time
-                time.sleep(2)
+    try:
+        structured_llm = llm.with_structured_output(JobMatchResult)
+        result = structured_llm.invoke(prompt)
+        # 按分数降序排序
+        sorted_matches = sorted(result.matches, key=lambda x: x.score, reverse=True)
+        # 生成报告文本
+        report_lines = ["## 岗位匹配报告\n"]
+        for i, m in enumerate(sorted_matches):
+            report_lines.append(f"{i+1}. **{m.job_title}** - {m.score}分\n   理由：{m.reason}\n")
+        state['report'] = "\n".join(report_lines)
+        state['job_scores'] = [{"job": m.job_title, "score": m.score, "reason": m.reason} for m in sorted_matches]
+        logger.info(f"匹配完成，Top1: {sorted_matches[0].job_title} ({sorted_matches[0].score}分)")
+        
+    except Exception as e:
+        logger.warning(f"结构化打分失败，重试一次: {e}")
+        raw = llm.invoke(prompt + "\n\n重要：只输出纯JSON，不要用```json```包裹，不要有任何解释文字。")
+        text = raw.content.strip()
+        if text.startswith("```"):
+            text = text.split("\n", 1)[1] if "\n" in text else text[3:]
+            text = text.rsplit("```", 1)[0].strip()
+        parsed = json.loads(text)
+        if isinstance(parsed, list):
+            parsed = {"matches": parsed}
 
-        # 如果信息不完整，在报告开头标注
-    if not state['info_complete']:
-        prefix = "⚠️ 注意：候选人简历信息不完整（工作年限缺失），以下匹配结果基于现有信息，仅供参考。\n\n"
-    else:
-        prefix = ""
+        # 手动映射中文键名→英文字段（模型可能用各种中文叫法）
+        raw_matches = parsed.get("matches", parsed.get("岗位打分", []))
+        normalized = []
+        for item in raw_matches:
+            job_title = item.get("岗位名称") or item.get("岗位") or item.get("职位") or item.get("job_title", "")
+            score = item.get("匹配分数") or item.get("分数") or item.get("score") or item.get("匹配度", 0)
+            reason = item.get("理由") or item.get("打分理由") or item.get("说明") or item.get("reason", "")
+            normalized.append({"job_title": str(job_title), "score": int(score), "reason": str(reason)})
 
-    
-        # 错误重试：最多3次
+        result = JobMatchResult(matches=normalized)
+
+        sorted_matches = sorted(result.matches, key=lambda x: x.score, reverse=True)
+        report_lines = ["## 岗位匹配报告\n"]
+        for i, m in enumerate(sorted_matches):
+            report_lines.append(f"{i+1}. **{m.job_title}** - {m.score}分\n   理由：{m.reason}\n")
+        state['report'] = "\n".join(report_lines)
+        state['job_scores'] = [{"job": m.job_title, "score": m.score, "reason": m.reason} for m in sorted_matches]
+        logger.info(f"重试成功，Top1: {sorted_matches[0].job_title} ({sorted_matches[0].score}分)")
+
 
     return state
+
 
 def ask_more_node(state: AgentState) -> AgentState:
     """信息不完整，追问用户补充"""
