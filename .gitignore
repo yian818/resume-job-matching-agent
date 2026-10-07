@@ -3,3 +3,7 @@ __pycache__/
 .vscode/
 jobs.db
 .env
+__pycache__/
+*.log
+.env
+*.db

@@ -37,44 +37,51 @@ llm = ChatOpenAI(
 
 # 定义简历结构化输出模型
 class ResumeInfo(BaseModel):
-    name: str = Field(description="候选人姓名")
-    education: str = Field(description="最高学历")
-    work_year: str = Field(description="工作年限，信息缺失填【信息缺失】")
-    skill: str = Field(description="掌握的技术栈")
-    project: str = Field(description="项目经历摘要")
+    name: str = Field(description="候选人姓名，只输出名字本身，不要加性别年龄")
+    education: str = Field(description="最高学历，只能填：博士/硕士/本科/大专/高中，不要输出学校名")
+    work_year: int = Field(description="总工作年限数字，按毕业年份到2026年计算，实习不算，无法确定填-1")
+    skill: list[str] = Field(description="技术栈关键词列表，每个词单独一个元素")
+    project: str = Field(description="项目经历一句话摘要")
 
 def extract_resume_node(state: AgentState) -> AgentState:
     """节点1：从简历文本抽取结构化信息"""
     logger.info("=== 节点1：抽取简历信息 ===")
-    
-    prompt = f"""你是简历信息提取器。从以下简历文本中提取候选人信息，严格输出JSON格式。
-如果某个信息找不到，值填"【信息缺失】"。
+
+    prompt = f"""你是简历信息提取器。从以下简历文本中提取候选人信息。
+
+严格规则：
+1. name: 只输出姓名本身，不要加性别、年龄
+2. education: 只能填"博士"/"硕士"/"本科"/"大专"/"高中"之一，不要输出学校名和专业
+3. work_year: 只输出数字（整数），按毕业年份到2026年算总工作年限，无法确定填-1
+4. skill: 技术栈列表，每个技术词单独一个元素
+5. project: 一句话概括最重要的项目经历
 
 简历文本：
-{state['resume_text']}
+{state['resume_text']}"""
 
-输出JSON格式：
-{{"name":"姓名","education":"学历","work_year":"工作年限","skill":"技术栈","project":"项目经历"}}
-只输出JSON，不要解释。"""
-    
-        # 用Pydantic结构化输出，大模型直接返回对象
-    structured_llm = llm.with_structured_output(ResumeInfo)
-    result = structured_llm.invoke(prompt)
-    
-    # result就是一个ResumeInfo对象，直接转成字典存到state里
+        # 用Pydantic结构化输出，带重试
+    try:
+        structured_llm = llm.with_structured_output(ResumeInfo)
+        result = structured_llm.invoke(prompt)
+    except Exception as e:
+        logger.warning(f"结构化输出失败，重试一次: {e}")
+        # 兜底：直接调LLM，手动清洗JSON
+        raw = llm.invoke(prompt + "\n\n重要：只输出纯JSON，不要用```json```包裹，不要有任何解释文字。")
+        text = raw.content.strip()
+        # 剥掉可能的 ```json``` 代码块
+        if text.startswith("```"):
+            text = text.split("\n", 1)[1] if "\n" in text else text[3:]
+            text = text.rsplit("```", 1)[0].strip()
+        result = ResumeInfo(**json.loads(text))
+
+
     state['resume_info'] = result.dict()
 
-        # 判断信息是否完整
-    if "【信息缺失】" in result.work_year:
-        state['info_complete'] = False
-    else:
-        state['info_complete'] = True
+    # 判断信息是否完整：work_year为-1表示缺失
+    state['info_complete'] = result.work_year > 0
     logger.info(f"信息完整度：{state['info_complete']}")
-
     logger.info(f"抽取成功：{state['resume_info']}")
 
-
-    
     return state
 
 def match_jobs_node(state: AgentState) -> AgentState:
@@ -132,21 +139,6 @@ def match_jobs_node(state: AgentState) -> AgentState:
 
     
         # 错误重试：最多3次
-    max_retries = 3
-    for attempt in range(max_retries):
-        try:
-            response = llm.invoke(prompt)
-            state['report'] = prefix + response.content
-
-            logger.info("报告生成完成")
-            break
-        except Exception as e:
-            logger.error(f"第{attempt+1}次调用失败：{e}")
-            if attempt == max_retries - 1:
-                state['report'] = "系统错误，匹配失败，请稍后重试"
-            else:
-                import time
-                time.sleep(2)
 
     return state
 
