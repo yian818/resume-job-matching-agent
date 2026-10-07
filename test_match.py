@@ -24,6 +24,6 @@ r2 = match_jobs_node(r1)
 print("\n匹配报告:")
 print(r2["report"])
 print("\n结构化分数:")
-for item in r2.get("job_scores", []):
-    print(f"  {item['score']:3d}分 - {item['job']}")
+for item in r2.get("matches", []):
+    print(f"  {item['score']:3d}分 - {item['job_title']}")
     print(f"       理由: {item['reason']}")
