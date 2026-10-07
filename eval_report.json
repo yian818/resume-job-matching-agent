@@ -1,29 +1,29 @@
 {
-  "total": 50,
-  "avg_time": 6.577013764381409,
+  "total": 49,
+  "avg_time": 6.911683588611837,
   "field_accuracy": {
     "name": {
-      "correct": 50,
-      "total": 50,
+      "correct": 49,
+      "total": 49,
       "accuracy": 1.0
     },
     "education": {
-      "correct": 50,
-      "total": 50,
+      "correct": 49,
+      "total": 49,
       "accuracy": 1.0
     },
     "work_year": {
-      "correct": 49,
-      "total": 50,
+      "correct": 48,
+      "total": 49,
       "accuracy": 0.98
     },
     "skill": {
-      "correct": 32,
-      "total": 50,
-      "accuracy": 0.64
+      "correct": 47,
+      "total": 49,
+      "accuracy": 0.959
     }
   },
-  "overall_accuracy": 0.905,
+  "overall_accuracy": 0.985,
   "errors": [
     {
       "rid": "R003",
@@ -32,112 +32,20 @@
       ]
     },
     {
-      "rid": "R008",
+      "rid": "R005",
       "errors": [
-        "skill: 命中0/2 期望{'legal compliance', 'ip law'} 实际['合同审核', '知识产权', '法律合规', 'python']"
-      ]
-    },
-    {
-      "rid": "R014",
-      "errors": [
-        "skill: 命中1/3 期望{'verilog', 'ic design', 'chip architecture'} 实际['verilog', '模拟ic设计', 'systemverilog', '芯片架构', 'c', 'python']"
-      ]
-    },
-    {
-      "rid": "R021",
-      "errors": [
-        "skill: 命中0/3 期望{'cross-border e-commerce', 'english', 'supply chain'} 实际['供应链管理', '数据分析', '英语', '跨境电商']"
-      ]
-    },
-    {
-      "rid": "R023",
-      "errors": [
-        "skill: 命中1/3 期望{'illustrator', 'photoshop', 'c4d'} 实际['c4d', 'ps', '品牌设计', 'ai']"
+        "skill: 命中2/5 期望{'ab testing', 'python', 'tableau', 'sql', 'statistics'} 实际['机器学习', 'tableu', 'python', 'ab测试', 'sql', '统计分析']"
       ]
     },
     {
       "rid": "R027",
       "errors": [
-        "skill: 命中1/3 期望{'hplc', 'r&d', 'food science'} 实际['食品化学', 'hplc', 'gc-ms', '团队管理', '配方研发']"
+        "skill: 命中1/3 期望{'食品科学', 'hplc', '研发'} 实际['食品化学', '团队管理', 'hplc', 'gc-ms', '配方研发']"
       ]
     },
     {
-      "rid": "R029",
-      "errors": [
-        "skill: 命中0/3 期望{'german', 'project management', 'english'} 实际['德语', '英语', '项目管理', '跨文化沟通']"
-      ]
-    },
-    {
-      "rid": "R031",
-      "errors": [
-        "skill: 命中0/2 期望{'curriculum design', 'education'} 实际['课程设计', '数学', 'python']"
-      ]
-    },
-    {
-      "rid": "R033",
-      "errors": [
-        "skill: 命中0/3 期望{'project management', 'brand strategy', 'copywriting'} 实际['创意文案', '项目管理', 'ps', '品牌策划']"
-      ]
-    },
-    {
-      "rid": "R034",
-      "errors": [
-        "skill: 命中0/2 期望{'maritime navigation', 'english'} 实际['gmdss', '航海技术', '船舶管理', '英语']"
-      ]
-    },
-    {
-      "rid": "R035",
-      "errors": [
-        "skill: 命中0/3 期望{'clinical medicine', 'endocrinology', 'ai healthcare'} 实际['临床医学', 'ai医疗', '产品管理', '内分泌']"
-      ]
-    },
-    {
-      "rid": "R036",
-      "errors": [
-        "skill: 命中0/2 期望{'marine engineering', 'english'} 实际['安全管理', '英语', '船舶维修', '轮机工程']"
-      ]
-    },
-    {
-      "rid": "R037",
-      "errors": [
-        "skill: 命中1/3 期望{'procreate', 'photoshop', 'illustration'} 实际['sai', 'procreate', 'ps', '插画设计']"
-      ]
-    },
-    {
-      "rid": "R040",
-      "errors": [
-        "skill: 命中1/3 期望{'oled', 'organic materials', 'spectroscopy'} 实际['oled', '团队管理', '光谱分析', 'pldt', '有机材料']"
-      ]
-    },
-    {
-      "rid": "R041",
-      "errors": [
-        "skill: 命中0/2 期望{'performance', 'acting'} 实际['舞蹈', '台词', '表演']"
-      ]
-    },
-    {
-      "rid": "R043",
-      "errors": [
-        "skill: 命中0/3 期望{'curriculum design', 'team management', 'english'} 实际['英语(专八)', '线上教学', '团队管理', '课程设计']"
-      ]
-    },
-    {
-      "rid": "R045",
-      "errors": [
-        "skill: 命中0/2 期望{'surgery', 'veterinary medicine'} 实际['放射影像', '外科手术', '兽医临床']"
-      ]
-    },
-    {
-      "rid": "R046",
-      "errors": [
-        "skill: 命中0/2 期望{'cultural heritage conservation', 'ceramics'} 实际['考古学', 'python(基础)', '文物保护', '陶瓷修复']"
-      ]
-    },
-    {
-      "rid": "R050",
-      "errors": [
-        "skill: 命中2/5 期望{'python', 'ai security', 'go', 'llm security', 'penetration testing'} 实际['ai安全', '安全架构', 'llm安全', 'go', '渗透测试', 'python']"
-      ]
+      "rid": "R032",
+      "error": "Extra data: line 3 column 1 (char 144)"
     }
   ]
 }

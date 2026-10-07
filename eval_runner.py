@@ -162,11 +162,39 @@ def _extract_years(text):
     match = re.search(r"(\d+)", str(text))
     return int(match.group(1)) if match else None
 
+# 中英文技能同义词映射
+SKILL_SYNONYMS = {
+    "english": "英语", "german": "德语", "french": "法语",
+    "project management": "项目管理", "team management": "团队管理",
+    "cross-border e-commerce": "跨境电商", "supply chain": "供应链管理",
+    "clinical medicine": "临床医学", "endocrinology": "内分泌",
+    "ai healthcare": "ai医疗", "ai security": "ai安全",
+    "llm security": "llm安全", "penetration testing": "渗透测试",
+    "photoshop": "ps", "illustrator": "ai",
+    "curriculum design": "课程设计", "brand strategy": "品牌策划",
+    "copywriting": "文案", "performance": "表演", "acting": "表演",
+    "surgery": "外科手术", "veterinary medicine": "兽医临床",
+    "cultural heritage conservation": "文物保护", "ceramics": "陶瓷修复",
+    "organic materials": "有机材料", "spectroscopy": "光谱分析",
+    "food science": "食品科学", "r&d": "研发",
+    "maritime navigation": "航海技术", "marine engineering": "轮机工程",
+    "ic design": "芯片设计", "chip architecture": "芯片架构",
+    "legal compliance": "法律合规", "ip law": "知识产权",
+}
+
 
 def _normalize_skills(skills):
     if isinstance(skills, str):
         skills = [s.strip() for s in skills.replace("，", ",").replace("、", ",").split(",")]
-    return set(s.strip().lower() for s in skills if s and s.strip())
+    result = set()
+    for s in skills:
+        s = s.strip().lower()
+        if not s:
+            continue
+        # 如果命中同义词映射，用中文形式
+        s = SKILL_SYNONYMS.get(s, s)
+        result.add(s)
+    return result
 
 
 if __name__ == "__main__":
