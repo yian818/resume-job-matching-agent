@@ -323,10 +323,25 @@ $env:HF_ENDPOINT="https://hf-mirror.com"
 | 4 | 视频算法工程师（技术部） | 18分 | 不相关 ✅ |
 | 5 | AI安全研究员（技术部） | 15分 | 完全不匹配 ✅ |
 
+---
+
+## P3阶段：Human-in-the-loop追问机制（已完成）
+
+### 已完成
+- state.py加追问相关字段：missing_fields、follow_up_question、user_answer、needs_human
+- extract_resume_node检测缺失字段，设置needs_human
+- ask_more_node加input()等待用户输入补充信息
+- main.py条件分支：信息不完整走ask_more，追问后回到extract_resume重新抽取
+- 完整流程：抽取→发现缺失→追问→用户输入→重新抽取→匹配
+
+### 面试话术
+> "我实现了Human-in-the-loop机制：Agent发现简历信息缺失时，会暂停执行，向用户追问补充信息。这是企业级Agent和玩具Demo的本质区别——Agent不确定的时候不瞎编，而是停下来问人。"
+
+---
+
 ### 待做
-- 重新跑50份评测，看RAG能不能提升Top-1命中率
-- P3阶段：Human-in-the-loop追问机制
 - P4阶段：FastAPI + Docker部署
+- 重新跑50份评测，看RAG能不能提升Top-1命中率
 
 ---
 

@@ -80,6 +80,21 @@ def extract_resume_node(state: AgentState) -> AgentState:
 
     # 判断信息是否完整：work_year为-1表示缺失
     state['info_complete'] = result.work_year > 0
+    
+    # Human-in-the-loop：检查缺失字段
+    missing = []
+    if result.work_year <= 0:
+        missing.append("work_year")
+    if not result.skill or len(result.skill) == 0:
+        missing.append("skill")
+    
+    state['missing_fields'] = missing
+    state['needs_human'] = len(missing) > 0
+    
+    if state['needs_human']:
+        state['follow_up_question'] = "你的简历信息不完整，缺少工作年限或技能列表，请补充一下你的工作/实习经历和技术栈。"
+        logger.info(f"信息不完整，缺失字段：{missing}")
+    
     logger.info(f"信息完整度：{state['info_complete']}")
     logger.info(f"抽取成功：{state['resume_info']}")
 
@@ -209,9 +224,26 @@ def match_jobs_node(state: AgentState) -> AgentState:
 
 
 def ask_more_node(state: AgentState) -> AgentState:
-    """信息不完整，追问用户补充"""
-    logger.info("=== 追问用户补充信息 ===")
-    state['report'] = "你的简历信息不完整，缺少工作年限。请补充你的工作/实习经历后再进行匹配。"
+    """信息不完整，追问用户补充（Human-in-the-loop）"""
+    logger.info("=== Human-in-the-loop：追问用户补充信息 ===")
+    
+    question = state.get('follow_up_question', "请补充你的工作年限和技能列表。")
+    print(f"\n❓ {question}")
+    
+    # 等待用户输入
+    user_answer = input("请输入补充信息：")
+    
+    logger.info(f"用户补充：{user_answer}")
+    
+    # 把用户补充的信息加到简历文本后面
+    state['resume_text'] += f"\n\n补充信息：{user_answer}"
+    state['user_answer'] = user_answer
+    
+    # 重置状态，让下一轮重新抽取
+    state['resume_info'] = None
+    state['info_complete'] = False
+    state['needs_human'] = False
+    
     return state
 
 def resume_optimize_node(state: AgentState) -> AgentState:

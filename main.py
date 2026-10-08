@@ -36,14 +36,17 @@ def build_agent():
     # 连线：抽取简历 → 匹配岗位 → 结束
     # 条件分支：信息完整才匹配，不完整走追问
     def should_match(state: AgentState) -> str:
-        return "match_jobs"
+        if state.get('info_complete', False):
+            return "match_jobs"
+        else:
+            return "ask_more"
         
 
     workflow.add_conditional_edges("extract_resume", should_match, {
     "match_jobs": "match_jobs",
     "ask_more": "ask_more"
 })
-    workflow.add_edge("ask_more", END)
+    workflow.add_edge("ask_more", "extract_resume")
 
 
     workflow.add_edge("match_jobs", "resume_optimize")
