@@ -5,18 +5,22 @@ retriever.py - RAG语义检索层（混合检索架构）
 """
 import chromadb
 import sqlite3
+from pathlib import Path
 from sentence_transformers import SentenceTransformer
 from database import get_all_jobs
+
+# 项目根目录
+BASE_DIR = Path(__file__).parent
 
 # 加载中文嵌入模型
 print("正在加载BGE嵌入模型...")
 encoder = SentenceTransformer('BAAI/bge-large-zh-v1.5')
 
 # 初始化ChromaDB
-chroma_client = chromadb.PersistentClient(path="./data/chroma_db")
+chroma_client = chromadb.PersistentClient(path=str(BASE_DIR / "data" / "chroma_db"))
 collection = chroma_client.get_or_create_collection("jobs")
 
-DB_FILE = "data/jobs.db"
+DB_FILE = str(BASE_DIR / "data" / "jobs.db")
 
 def init_jobs_to_db():
     """把20个岗位的JD文本存入向量库"""

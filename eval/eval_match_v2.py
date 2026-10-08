@@ -3,12 +3,18 @@ eval_match_v2.py - 岗位匹配准确率评测（v2：用人工标注标准答�
 """
 import json
 import time
+import sys
+from pathlib import Path
+
+# 把项目根目录加到Python路径
+sys.path.append(str(Path(__file__).parent.parent))
+
 from nodes import extract_resume_node, match_jobs_node
 from eval_dataset import RESUMES, JOBS
 from database import get_all_jobs
 
 # 加载人工标注的标准答案
-with open("manual_answers.json", "r", encoding="utf-8") as f:
+with open(Path(__file__).parent / "manual_answers.json", "r", encoding="utf-8") as f:
     MANUAL_ANSWERS = json.load(f)["answers"]
 
 def main():
@@ -42,6 +48,10 @@ def main():
             "report": "",
             "error": None,
             "info_complete": True,
+            "missing_fields": [],
+            "follow_up_question": "",
+            "user_answer": "",
+            "needs_human": False,
         }
 
         try:
