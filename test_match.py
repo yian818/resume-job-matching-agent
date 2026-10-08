@@ -1,10 +1,15 @@
-"""测试匹配打分功能"""
+"""
+test_match.py - 测试单份简历匹配
+"""
 from nodes import extract_resume_node, match_jobs_node
-from eval_dataset import RESUMES
 
-# 用第1份简历（张明）
-s = {
-    "resume_text": RESUMES[0]["resume_text"],
+# 张明的简历测试
+test_resume = """张明，男，30岁，硕士学历，6年工作经验。
+技能：Python, PyTorch, LangGraph, RAG, LLM, FastAPI, Docker
+项目经历：主导开发AI客服Agent，基于LangGraph搭建多节点工作流，支持多轮对话和工具调用，日均处理5000+请求。"""
+
+state = {
+    "resume_text": test_resume,
     "resume_info": None,
     "jobs": [],
     "report": "",
@@ -12,18 +17,8 @@ s = {
     "info_complete": True,
 }
 
-print("=== 第1步：简历抽取 ===")
-r1 = extract_resume_node(s)
-print(f"姓名: {r1['resume_info']['name']}")
-print(f"学历: {r1['resume_info']['education']}")
-print(f"年限: {r1['resume_info']['work_year']}")
-print(f"技能: {r1['resume_info']['skill']}")
-
-print("\n=== 第2步：岗位匹配打分 ===")
-r2 = match_jobs_node(r1)
-print("\n匹配报告:")
-print(r2["report"])
-print("\n结构化分数:")
-for item in r2.get("matches", []):
-    print(f"  {item['score']:3d}分 - {item['job_title']}")
-    print(f"       理由: {item['reason']}")
+print("=== 开始测试 ===")
+state = extract_resume_node(state)
+print("\n=== 匹配结果 ===")
+state = match_jobs_node(state)
+print("\n" + state["report"])

@@ -2,9 +2,12 @@
 import_jobs.py - 把eval_dataset.py里的20个JD导入SQLite
 """
 import sqlite3
+from pathlib import Path
 from eval_dataset import JOBS
 
-DB_FILE = "jobs.db"
+DB_DIR = Path(__file__).parent.parent / "data"
+DB_DIR.mkdir(exist_ok=True)
+DB_FILE = DB_DIR / "jobs.db"
 
 conn = sqlite3.connect(DB_FILE)
 cursor = conn.cursor()

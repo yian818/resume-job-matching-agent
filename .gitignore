@@ -1,9 +1,13 @@
 __pycache__/
 *.pyc
-.vscode/
-jobs.db
+*.pyo
+*.pyd
 .env
-__pycache__/
 *.log
-.env
 *.db
+data/
+chroma_db/
+eval_match_output*.txt
+eval_report.json
+匹配报告.md
+.vscode/

@@ -1,6 +1,11 @@
 import sqlite3
+import os
+from pathlib import Path
 
-DB_FILE = "jobs.db"
+# 数据文件统一放在 data/ 目录
+DB_DIR = Path(__file__).parent / "data"
+DB_DIR.mkdir(exist_ok=True)
+DB_FILE = DB_DIR / "jobs.db"
 
 def init_db():
     """初始化数据库，创建岗位表并插入测试数据"""
@@ -34,7 +39,7 @@ def init_db():
     
     conn.commit()
     conn.close()
-    print("数据库初始化完成")
+    logger.info("数据库初始化完成")
 
 def get_all_jobs():
     """从数据库读取所有岗位"""
@@ -60,7 +65,8 @@ def get_all_jobs():
 
 if __name__ == "__main__":
     init_db()
+    logger.info("从数据库读取所有岗位")
     jobs = get_all_jobs()
-    print(f"读取到 {len(jobs)} 个岗位：")
+    logger.info(f"读取到 {len(jobs)} 个岗位")
     for job in jobs:
-        print(f"  - {job['title']}（{job['department']}）")
+        logger.info(f"  - {job['title']}（{job['department']}）")

@@ -7,6 +7,7 @@ from pydantic import BaseModel, Field
 from state import AgentState
 from database import get_all_jobs
 from scoring_rules import SCORING_RULES
+from retriever import search_similar_jobs
 
 
 
@@ -97,15 +98,33 @@ class JobMatchResult(BaseModel):
     matches: list[JobMatchScore] = Field(description="所有岗位的匹配打分列表")
 
 def match_jobs_node(state: AgentState) -> AgentState:
-    """节点2：匹配岗位并打分（结构化输出）"""
+    """节点2：匹配岗位并打分（RAG召回 + LLM精排）"""
     logger.info("=== 节点2：岗位匹配打分 ===")
 
-    jobs = get_all_jobs()
-    state['jobs'] = jobs
-    job_list_text = "\n".join([f"{i+1}. {j['title']}（{j['department']}）- 要求{j['required_years']}年，技能：{j['required_skills']}" for i, j in enumerate(jobs)])
-
     resume_info = state.get('resume_info', {})
-    prompt = f"""你是招聘岗位匹配分析师。基于以下候选人简历信息和岗位列表，对每个岗位打分。
+    skills = resume_info.get('skill', [])
+    work_year = resume_info.get('work_year', 0)
+
+    # 第一步：RAG语义检索Top-5相关岗位
+    logger.info(f"RAG语义检索：技能={skills}, 年限={work_year}")
+    rag_results = search_similar_jobs(skills, max_years=work_year, top_k=5)
+    
+    if not rag_results:
+        # RAG没找到， fallback到全部岗位
+        logger.warning("RAG未检索到合适岗位，使用全部岗位")
+        jobs = get_all_jobs()
+        rag_jobs = jobs
+    else:
+        # 从SQLite查询这5个岗位的完整信息
+        all_jobs = get_all_jobs()
+        rag_titles = [r['title'] for r in rag_results]
+        rag_jobs = [j for j in all_jobs if j['title'] in rag_titles]
+        logger.info(f"RAG召回{len(rag_jobs)}个候选岗位")
+
+    state['jobs'] = rag_jobs
+    job_list_text = "\n".join([f"{i+1}. {j['title']}（{j['department']}）- 要求{j['required_years']}年，技能：{j['required_skills']}" for i, j in enumerate(rag_jobs)])
+
+    prompt = f"""你是招聘岗位匹配分析师。基于以下候选人简历信息和候选岗位列表，对每个岗位打分。
 
 打分规则（严格执行，总分100）：
 - 技能匹配（权重40%）：岗位要求的核心技能，候选人会几个？
@@ -134,7 +153,7 @@ def match_jobs_node(state: AgentState) -> AgentState:
 候选人简历：
 {json.dumps(resume_info, ensure_ascii=False)}
 
-岗位列表（共{len(jobs)}个）：
+候选岗位列表（共{len(rag_jobs)}个）：
 {job_list_text}
 
 输出JSON格式：{{"matches":[{{"岗位名称":"AI Agent工程师","匹配分数":85,"理由":"技能高度匹配"}}]}}"""
