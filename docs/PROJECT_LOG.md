@@ -339,8 +339,22 @@ $env:HF_ENDPOINT="https://hf-mirror.com"
 
 ---
 
+## P4阶段：FastAPI Web服务（已完成）
+
+### 已完成
+- 创建main_api.py，用FastAPI封装成Web服务
+- POST /api/match：传入简历文本，返回匹配报告
+- GET /api/health：健康检查接口
+- 自动生成Swagger文档（/docs），支持在线测试
+- 中文接口说明和参数标注
+
+### 面试话术
+> "我用FastAPI把AI Agent封装成了RESTful API，前端可以调用这个接口提交简历，后端返回匹配报告。这是标准的前后端分离架构，后端专注业务逻辑，前端专注用户界面。"
+
+---
+
 ### 待做
-- P4阶段：FastAPI + Docker部署
+- Docker打包部署
 - 重新跑50份评测，看RAG能不能提升Top-1命中率
 
 ---

@@ -56,11 +56,11 @@ def build_agent():
     
     return workflow.compile()
 
+# 测试代码只在直接运行main.py时执行，import时不执行
 if __name__ == "__main__":
     # 测试用例：模拟一段简历文本
     test_resume = read_pdf(r"C:\Users\LBW\Desktop\李博文-AI-Agent工程师求职简历.pdf")
 
-    
     agent = build_agent()
     # 运行Agent
     result = agent.invoke({
@@ -76,7 +76,8 @@ if __name__ == "__main__":
     logger.info("最终匹配报告：")
     logger.info("="*50)
     logger.info(result["report"])
-# 保存报告到文件
-with open("匹配报告.md", "w", encoding="utf-8") as f:
-    f.write(result['report'])
-logger.info("报告已保存到：匹配报告.md")
+
+    # 保存报告到文件
+    with open("匹配报告.md", "w", encoding="utf-8") as f:
+        f.write(result['report'])
+    logger.info("报告已保存到：匹配报告.md")
