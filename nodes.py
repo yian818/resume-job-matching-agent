@@ -119,10 +119,11 @@ def match_jobs_node(state: AgentState) -> AgentState:
     resume_info = state.get('resume_info', {})
     skills = resume_info.get('skill', [])
     work_year = resume_info.get('work_year', 0)
+    project_text = resume_info.get('project', '')
 
-    # 第一步：RAG语义检索Top-5相关岗位
+    # 第一步：RAG语义检索Top-10相关岗位（向量+关键词混合召回）
     logger.info(f"RAG语义检索：技能={skills}, 年限={work_year}")
-    rag_results = search_similar_jobs(skills, max_years=work_year, top_k=5)
+    rag_results = search_similar_jobs(skills, project_text=project_text, max_years=work_year, top_k=10)
     
     if not rag_results:
         # RAG没找到， fallback到全部岗位
