@@ -6,7 +6,7 @@ from langchain_openai import ChatOpenAI
 from pydantic import BaseModel, Field
 from state import AgentState
 from database import get_all_jobs
-from scoring_rules import SCORING_RULES
+from scoring_rules import SCORING_RULES, compute_rule_score, hard_cap
 from retriever import search_similar_jobs
 
 
@@ -112,6 +112,45 @@ class JobMatchScore(BaseModel):
 class JobMatchResult(BaseModel):
     matches: list[JobMatchScore] = Field(description="所有岗位的匹配打分列表")
 
+
+def _normalize_job_title(title: str) -> str:
+    """
+    把 LLM 可能返回的带部门后缀标题，规整回数据库裸标题。
+    例：'AI Agent工程师（产品部）' -> 'AI Agent工程师'
+    LLM 常常照着 prompt 里 {title}（{department}）的格式把部门抄回来，
+    直接拿它查 job_info_map 会查不到，融合就被绕过。这里物理剥掉后缀。
+    """
+    return title.split("（")[0].strip()
+
+
+def _fuse_scores(matches, resume_info, job_info_map):
+    """
+    LLM分数 与 规则分数 融合 + 硬上限（A2 核心）。
+
+    最终分 = min( round(0.5×规则分 + 0.5×LLM分), hard_cap )
+
+    - 规则分：compute_rule_score 的确定性锚点，LLM 无法推翻
+    - 硬上限：核心技能完全不沾边 → 上限25分，物理上排不进 Top-1
+    - 兜底：RAG 召回的岗位若在 job_info_map 找不到完整信息，直接用 LLM 分（不误伤）
+    """
+    fused = []
+    for m in matches:
+        job = job_info_map.get(m.job_title) or job_info_map.get(_normalize_job_title(m.job_title))
+        if job is not None:
+            rule = compute_rule_score(job, resume_info)
+            cap = hard_cap(job, resume_info)
+            final_score = int(min(round(0.5 * rule + 0.5 * m.score), cap))
+        else:
+            final_score = m.score
+        fused.append({
+            "job": m.job_title,
+            "score": final_score,
+            "reason": m.reason,
+            "llm_score": m.score,   # 保留原始LLM分，便于调试对比
+        })
+    fused.sort(key=lambda x: x["score"], reverse=True)
+    return fused
+
 def match_jobs_node(state: AgentState) -> AgentState:
     """节点2：匹配岗位并打分（RAG召回 + LLM精排）"""
     logger.info("=== 节点2：岗位匹配打分 ===")
@@ -138,6 +177,10 @@ def match_jobs_node(state: AgentState) -> AgentState:
         logger.info(f"RAG召回{len(rag_jobs)}个候选岗位")
 
     state['jobs'] = rag_jobs
+
+    # 标题→完整岗位信息 映射表（规则打分需要读 required_skills/required_years/education）
+    job_info_map = {j['title']: j for j in rag_jobs}
+
     job_list_text = "\n".join([f"{i+1}. {j['title']}（{j['department']}）- 要求{j['required_years']}年，技能：{j['required_skills']}" for i, j in enumerate(rag_jobs)])
 
     prompt = f"""你是招聘岗位匹配分析师。基于以下候选人简历信息和候选岗位列表，对每个岗位打分。
@@ -180,15 +223,14 @@ def match_jobs_node(state: AgentState) -> AgentState:
     try:
         structured_llm = llm.with_structured_output(JobMatchResult)
         result = structured_llm.invoke(prompt)
-        # 按分数降序排序
-        sorted_matches = sorted(result.matches, key=lambda x: x.score, reverse=True)
+        # 融合规则分 + LLM分 + 硬上限，然后按融合分降序
+        state['job_scores'] = _fuse_scores(result.matches, resume_info, job_info_map)
         # 生成报告文本
         report_lines = ["## 岗位匹配报告\n"]
-        for i, m in enumerate(sorted_matches):
-            report_lines.append(f"{i+1}. **{m.job_title}** - {m.score}分\n   理由：{m.reason}\n")
+        for i, m in enumerate(state['job_scores']):
+            report_lines.append(f"{i+1}. **{m['job']}** - {m['score']}分\n   理由：{m['reason']}\n")
         state['report'] = "\n".join(report_lines)
-        state['job_scores'] = [{"job": m.job_title, "score": m.score, "reason": m.reason} for m in sorted_matches]
-        logger.info(f"匹配完成，Top1: {sorted_matches[0].job_title} ({sorted_matches[0].score}分)")
+        logger.info(f"匹配完成，Top1: {state['job_scores'][0]['job']} ({state['job_scores'][0]['score']}分)")
         
     except Exception as e:
         logger.warning(f"结构化打分失败，重试一次: {e}")
@@ -212,13 +254,13 @@ def match_jobs_node(state: AgentState) -> AgentState:
 
         result = JobMatchResult(matches=normalized)
 
-        sorted_matches = sorted(result.matches, key=lambda x: x.score, reverse=True)
+        # 融合规则分 + LLM分 + 硬上限（和成功分支同一套逻辑）
+        state['job_scores'] = _fuse_scores(result.matches, resume_info, job_info_map)
         report_lines = ["## 岗位匹配报告\n"]
-        for i, m in enumerate(sorted_matches):
-            report_lines.append(f"{i+1}. **{m.job_title}** - {m.score}分\n   理由：{m.reason}\n")
+        for i, m in enumerate(state['job_scores']):
+            report_lines.append(f"{i+1}. **{m['job']}** - {m['score']}分\n   理由：{m['reason']}\n")
         state['report'] = "\n".join(report_lines)
-        state['job_scores'] = [{"job": m.job_title, "score": m.score, "reason": m.reason} for m in sorted_matches]
-        logger.info(f"重试成功，Top1: {sorted_matches[0].job_title} ({sorted_matches[0].score}分)")
+        logger.info(f"重试成功，Top1: {state['job_scores'][0]['job']} ({state['job_scores'][0]['score']}分)")
 
 
     return state
