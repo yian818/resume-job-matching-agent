@@ -37,9 +37,6 @@ SKILL_SYNONYMS = {
     "legal compliance": "法律合规", "ip law": "知识产权",
 }
 
-# 学历等级：数值越高学历越高
-EDU_RANK = {"博士": 3, "硕士": 2, "本科": 1, "大专": 0, "高中": 0}
-
 
 def _normalize_skill(skill: str) -> str:
     """技能词归一化：去空白、小写、同义词映射"""
@@ -47,9 +44,40 @@ def _normalize_skill(skill: str) -> str:
     return SKILL_SYNONYMS.get(s, s)
 
 
+# 学历等级：数值越高学历越高
+EDU_RANK = {"博士": 3, "硕士": 2, "本科": 1, "大专": 0, "高中": 0}
+
+# 岗位技能域扩充（A3.5 核心）：
+# 解决"岗位技能表太薄导致字面重合稀疏"的根因问题（如R022韩冰：
+# 做推荐系统/时空预测，字面上和数据分析师只有Python重合，被hard_cap误伤到40分）。
+# 扩充的是【岗位侧】的技能域（行业知识，可补全），不动简历侧（真实数据）。
+# 原则：
+#   1. 只给"技能域广"的软技能岗/交叉岗扩充（技术岗技能已具体，不需要）
+#   2. 扩充词只加该岗位真正的工作内容，不加泛词（如"沟通""办公软件"），避免人人匹配
+#   3. hard_cap判定用扩充后重合数，但技能覆盖率分母用扩充后的完整技能域
+JOB_SKILL_EXPANSION = {
+    "数据分析师": ["数据挖掘", "统计分析", "推荐系统", "特征工程", "机器学习", "数据可视化", "AB测试", "ETL", "数据仓库"],
+    "AI产品经理": ["产品管理", "需求分析", "数据分析", "AIGC", "大模型", "用户研究", "原型设计", "Prompt Engineering"],
+    "产品运营专员": ["内容运营", "用户运营", "活动策划", "数据分析", "用户增长", "社区运营"],
+    "AI Agent工程师": ["Agent", "工具调用", "Function Calling", "提示词工程", "应用开发", "MCP", "Prompt Engineering"],
+    "量化交易研究员": ["量化", "金融建模", "因子分析", "回测", "高频交易", "机器学习", "风险管理"],
+    "AI安全研究员": ["对抗攻击", "越狱防御", "安全评测", "红队", "模型安全", "漏洞分析"],
+    "临床研发经理": ["临床试验", "药品注册", "医学事务", "临床运营", "GCP", "数据管理"],
+    "外贸业务员": ["跨境电商", "海外市场", "客户开发", "商务英语", "外贸单证", "物流管理"],
+    "人力资源BP": ["招聘", "绩效管理", "组织发展", "员工关系", "薪酬管理", "人才盘点"],
+}
+
+
+def _job_skill_domain(job: dict) -> set:
+    """岗位完整技能域 = 原始必需技能 + 扩充技能（用于判定重合和覆盖率）"""
+    base = {_normalize_skill(s) for s in job["required_skills"].split(",")}
+    expanded = {_normalize_skill(s) for s in JOB_SKILL_EXPANSION.get(job.get("title", ""), [])}
+    return base | expanded
+
+
 def skill_overlap(job: dict, resume_info: dict) -> set:
-    """简历技能 ∩ 岗位要求技能 的重合集合（归一化后）"""
-    job_skills = {_normalize_skill(s) for s in job["required_skills"].split(",")}
+    """简历技能 ∩ 岗位技能域 的重合集合（归一化后）"""
+    job_skills = _job_skill_domain(job)
     resume_skills = {_normalize_skill(s) for s in resume_info.get("skill", [])}
     return job_skills & resume_skills
 
@@ -83,11 +111,11 @@ def compute_rule_score(job: dict, resume_info: dict) -> int:
     最终再受 hard_cap 约束。
     """
     overlap = skill_overlap(job, resume_info)
-    job_skills = {_normalize_skill(s) for s in job["required_skills"].split(",")}
+    job_domain = _job_skill_domain(job)  # 扩充后的完整技能域（原始必需 + 同义扩充）
 
-    # 技能分（40）
-    if job_skills:
-        skill_score = 40 * len(overlap) / len(job_skills)
+    # 技能分（40）：分子=触及技能数，分母=完整技能域（防止扩充稀释分数）
+    if job_domain:
+        skill_score = 40 * len(overlap) / len(job_domain)
     else:
         skill_score = 20
 

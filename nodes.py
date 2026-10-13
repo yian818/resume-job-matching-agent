@@ -8,6 +8,7 @@ from state import AgentState
 from database import get_all_jobs
 from scoring_rules import SCORING_RULES, compute_rule_score, hard_cap
 from retriever import search_similar_jobs
+from reranker import rerank_scores
 
 
 
@@ -220,18 +221,36 @@ def match_jobs_node(state: AgentState) -> AgentState:
 
     logger.info(f"开始匹配岗位，候选人信息：{resume_info}")
 
+    # A3 cross-encoder 三信号融合重排
+    def _apply_rerank():
+        """对融合后的job_scores做A3重排，失败则回退到A2结果"""
+        try:
+            state['job_scores'] = rerank_scores(
+                state['job_scores'], resume_info, job_info_map
+            )
+            logger.info(f"A3重排完成，Top1: {state['job_scores'][0]['job']} ({state['job_scores'][0].get('final_score', state['job_scores'][0]['score'])}分)")
+        except Exception as e:
+            logger.warning(f"A3重排失败，使用A2融合结果: {e}")
+
+    def _build_report():
+        """根据当前job_scores生成报告文本"""
+        nonlocal state
+        report_lines = ["## 岗位匹配报告\n"]
+        for i, m in enumerate(state['job_scores']):
+            score = m.get('final_score', m['score'])
+            report_lines.append(f"{i+1}. **{m['job']}** - {score}分\n   理由：{m['reason']}\n")
+        state['report'] = "\n".join(report_lines)
+
     try:
         structured_llm = llm.with_structured_output(JobMatchResult)
         result = structured_llm.invoke(prompt)
         # 融合规则分 + LLM分 + 硬上限，然后按融合分降序
         state['job_scores'] = _fuse_scores(result.matches, resume_info, job_info_map)
-        # 生成报告文本
-        report_lines = ["## 岗位匹配报告\n"]
-        for i, m in enumerate(state['job_scores']):
-            report_lines.append(f"{i+1}. **{m['job']}** - {m['score']}分\n   理由：{m['reason']}\n")
-        state['report'] = "\n".join(report_lines)
-        logger.info(f"匹配完成，Top1: {state['job_scores'][0]['job']} ({state['job_scores'][0]['score']}分)")
-        
+        _apply_rerank()   # A3：cross-encoder 三信号融合重排
+        _build_report()
+        score = state['job_scores'][0].get('final_score', state['job_scores'][0]['score'])
+        logger.info(f"匹配完成，Top1: {state['job_scores'][0]['job']} ({score}分)")
+
     except Exception as e:
         logger.warning(f"结构化打分失败，重试一次: {e}")
         raw = llm.invoke(prompt + "\n\n重要：只输出纯JSON，不要用```json```包裹，不要有任何解释文字。")
@@ -256,11 +275,10 @@ def match_jobs_node(state: AgentState) -> AgentState:
 
         # 融合规则分 + LLM分 + 硬上限（和成功分支同一套逻辑）
         state['job_scores'] = _fuse_scores(result.matches, resume_info, job_info_map)
-        report_lines = ["## 岗位匹配报告\n"]
-        for i, m in enumerate(state['job_scores']):
-            report_lines.append(f"{i+1}. **{m['job']}** - {m['score']}分\n   理由：{m['reason']}\n")
-        state['report'] = "\n".join(report_lines)
-        logger.info(f"重试成功，Top1: {state['job_scores'][0]['job']} ({state['job_scores'][0]['score']}分)")
+        _apply_rerank()   # A3：cross-encoder 三信号融合重排
+        _build_report()
+        score = state['job_scores'][0].get('final_score', state['job_scores'][0]['score'])
+        logger.info(f"重试成功，Top1: {state['job_scores'][0]['job']} ({score}分)")
 
 
     return state
