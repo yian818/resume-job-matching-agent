@@ -14,6 +14,7 @@
 
 import argparse
 import json
+import re
 import time
 import sys
 from pathlib import Path
@@ -29,45 +30,46 @@ with open(Path(__file__).parent / "manual_answers.json", "r", encoding="utf-8") 
     MANUAL_ANSWERS = json.load(f)["answers"]
 
 
-def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--start", type=int, default=1, help="起始编号（含），从1开始")
-    parser.add_argument("--end", type=int, default=len(RESUMES), help="结束编号（含）")
-    parser.add_argument("--log", type=str, default="output_a3_full.log", help="结果日志文件（追加模式）")
-    args = parser.parse_args()
+def already_done(log_path: Path) -> set:
+    """读已有日志，找出已跑完的case（断点续跑用）。
+    只跳过 OK/--（成功），绝不跳过 XX（失败）——失败的要重新跑。
+    同时跳过 502 HTML 脏行（失败行内容可能跨多行）。"""
+    done = set()
+    if not log_path.exists():
+        return done
+    for line in log_path.read_text(encoding="utf-8").splitlines():
+        if not line.startswith("--") and not line.startswith("OK"):
+            continue  # 只认成功行；XX/脏行忽略
+        m = re.search(r"\b(R\d{3})\b", line)
+        if m:
+            done.add(m.group(1))
+    return done
 
-    start, end = max(1, args.start), min(len(RESUMES), args.end)
-    print(f"分批评测：第 {start}~{end} 份（共{len(RESUMES)}份），结果追加到 {args.log}")
 
-    jobs_in_db = get_all_jobs()
-    print(f"数据库岗位数：{len(jobs_in_db)}")
+def run_one(i: int) -> dict:
+    """跑单份简历，返回 (line, state, error)。失败时内部重试。"""
+    rid = f"R{i+1:03d}"
+    resume_data = RESUMES[i]
+    resume_text = resume_data["resume_text"]
+    truth_job = MANUAL_ANSWERS.get(rid)
 
-    log_path = Path(__file__).parent / args.log
+    state = {
+        "resume_text": resume_text,
+        "resume_info": None,
+        "jobs": [],
+        "report": "",
+        "error": None,
+        "info_complete": True,
+        "missing_fields": [],
+        "follow_up_question": "",
+        "user_answer": "",
+        "needs_human": False,
+    }
 
-    top1_hits = 0
-    top3_hits = 0
-    total_runs = 0
-    errors = []
-
-    for i in range(start - 1, end):
-        rid = f"R{i+1:03d}"
-        resume_data = RESUMES[i]
-        resume_text = resume_data["resume_text"]
-        truth_job = MANUAL_ANSWERS.get(rid)
-
-        state = {
-            "resume_text": resume_text,
-            "resume_info": None,
-            "jobs": [],
-            "report": "",
-            "error": None,
-            "info_complete": True,
-            "missing_fields": [],
-            "follow_up_question": "",
-            "user_answer": "",
-            "needs_human": False,
-        }
-
+    # 重试机制：API 抖动（502/Connection error）是评测失败主因，重试3次
+    MAX_RETRY = 3
+    last_err = None
+    for attempt in range(MAX_RETRY):
         try:
             state = extract_resume_node(state)
             state = match_jobs_node(state)
@@ -77,38 +79,80 @@ def main():
             if truth_job is None:
                 top_job = scores[0]["job"] if scores else "无"
                 top_score = scores[0]["score"] if scores else 0
-                line = f"-- [{i+1}/50] {rid} {resume_info['name']} | 无标准答案 | top1:{top_job}({top_score})"
-                print(line)
-                with open(log_path, "a", encoding="utf-8") as f:
-                    f.write(line + "\n")
-                continue
+                return {"rid": rid, "line": f"-- [{i+1}/50] {rid} {resume_info['name']} | 无标准答案 | top1:{top_job}({top_score})", "ok": True}
 
-            total_runs += 1
             rank = -1
             for idx, s in enumerate(scores):
                 if truth_job in s["job"]:
                     rank = idx + 1
                     break
 
-            if rank == 1:
-                top1_hits += 1
-            if rank <= 3:
-                top3_hits += 1
-
             top_job = scores[0]["job"] if scores else "无"
             top_score = scores[0]["score"] if scores else 0
             status = "OK" if rank <= 3 else "XX"
             line = f"{status} [{i+1}/50] {rid} {resume_info['name']} | truth:{truth_job} | top1:{top_job}({top_score}) | rank:{rank}"
-            print(line)
-            with open(log_path, "a", encoding="utf-8") as f:
-                f.write(line + "\n")
+            return {"rid": rid, "line": line, "rank": rank, "ok": True}
 
         except Exception as e:
-            errors.append({"rid": rid, "error": str(e)})
-            line = f"XX [{i+1}/50] {rid} failed: {e}"
-            print(line)
-            with open(log_path, "a", encoding="utf-8") as f:
-                f.write(line + "\n")
+            last_err = e
+            if attempt < MAX_RETRY - 1:
+                wait = 10 * (attempt + 1)  # 10s, 20s 递增等待
+                print(f"  ⚠️ {rid} 第{attempt+1}次失败: {str(e)[:60]}，{wait}s后重试")
+                time.sleep(wait)
+
+    return {"rid": rid, "line": f"XX [{i+1}/50] {rid} failed: {last_err}", "ok": False, "error": str(last_err)}
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--start", type=int, default=1, help="起始编号（含），从1开始")
+    parser.add_argument("--end", type=int, default=len(RESUMES), help="结束编号（含）")
+    parser.add_argument("--log", type=str, default="output_a3_full.log", help="结果日志文件（追加模式）")
+    parser.add_argument("--resume", action="store_true", help="跳过日志中已跑过的case（断点续跑）")
+    args = parser.parse_args()
+
+    start, end = max(1, args.start), min(len(RESUMES), args.end)
+    log_path = Path(__file__).parent / args.log
+
+    # 断点续跑：跳过已完成的
+    done = already_done(log_path) if args.resume else set()
+    if done:
+        print(f"断点续跑：日志中已有 {len(done)} 份已完成，跳过")
+
+    print(f"分批评测：第 {start}~{end} 份（共{len(RESUMES)}份），结果追加到 {args.log}")
+
+    jobs_in_db = get_all_jobs()
+    print(f"数据库岗位数：{len(jobs_in_db)}")
+
+    top1_hits = 0
+    top3_hits = 0
+    total_runs = 0
+    errors = []
+
+    for i in range(start - 1, end):
+        rid = f"R{i+1:03d}"
+        if rid in done:
+            print(f"  跳过 {rid}（已跑过）")
+            continue
+
+        result = run_one(i)
+        print(result["line"])
+        with open(log_path, "a", encoding="utf-8") as f:
+            f.write(result["line"] + "\n")
+
+        if not result["ok"]:
+            errors.append({"rid": rid, "error": result.get("error", "未知")})
+            continue
+
+        # 有标答才算进正确率
+        truth_job = MANUAL_ANSWERS.get(rid)
+        if truth_job is None:
+            continue
+        total_runs += 1
+        if result.get("rank") == 1:
+            top1_hits += 1
+        if result.get("rank") is not None and result["rank"] <= 3:
+            top3_hits += 1
 
         if (i + 1) % 5 == 0:
             time.sleep(2)
