@@ -1,12 +1,13 @@
 import os
 import json
+import re
 import time
 from dotenv import load_dotenv
 from langchain_openai import ChatOpenAI
 from pydantic import BaseModel, Field
 from state import AgentState
 from database import get_all_jobs
-from scoring_rules import SCORING_RULES, compute_rule_score, hard_cap
+from scoring_rules import SCORING_RULES, compute_rule_score, hard_cap, _normalize_skill
 from retriever import search_similar_jobs
 from reranker import rerank_scores
 
@@ -55,7 +56,12 @@ def extract_resume_node(state: AgentState) -> AgentState:
 1. name: 只输出姓名本身，不要加性别、年龄
 2. education: 只能填"博士"/"硕士"/"本科"/"大专"/"高中"之一，不要输出学校名和专业
 3. work_year: 只输出数字（整数），按毕业年份到2026年算总工作年限，无法确定填-1
-4. skill: 技术栈列表，每个技术词单独一个元素
+4. skill: 候选人的**全部**技能清单，每项单独一个元素。务必包含四类，缺一不可：
+   - 技术栈：Python、SQL、PyTorch、LangGraph 等
+   - 语言能力：英语(CET-6)、德语、日语 等（保留语言名称即可，括号里的等级说明可去掉）
+   - 行业/业务技能：跨境电商、供应链管理、临床医学、外贸、内容运营、产品管理 等
+   - 专业软技能：项目管理、团队管理、数据分析 等
+   逐项提取简历原文里出现的，不要自创、不要合并
 5. project: 一句话概括最重要的项目经历
 
 简历文本：
@@ -77,6 +83,30 @@ def extract_resume_node(state: AgentState) -> AgentState:
         result = ResumeInfo(**json.loads(text))
 
 
+    state['resume_info'] = result.dict()
+
+    # ===== 抽取自检：确定性技能补抽（P7）=====
+    # 防 LLM 漏抽"非技术技能"（语言/行业运营/软技能）。原理：
+    # 简历原文的「技能：」行是唯一客观事实，抽出的技能必须覆盖原文；
+    # 覆盖不到的，直接从原文补回——不依赖 LLM 的自觉。
+    def _extract_literal_skills(text: str) -> list:
+        found = []
+        for pat in (r"技能：(.+)", r"技术栈：(.+)"):
+            m = re.search(pat, text)
+            if not m:
+                continue
+            for s in re.split(r"[,，、]", m.group(1)):
+                s = re.sub(r"[（(].*?[)）]", "", s.strip()).strip().rstrip("。")
+                if s:
+                    found.append(s)
+        return found
+
+    extracted_norm = {_normalize_skill(s) for s in result.skill}
+    for literal in _extract_literal_skills(state['resume_text']):
+        if _normalize_skill(literal) not in extracted_norm:
+            result.skill.append(literal)          # 补回原文技能
+            extracted_norm.add(_normalize_skill(literal))
+            logger.info(f"技能补抽：原文「{literal}」未被抽出，已补回")
     state['resume_info'] = result.dict()
 
     # 判断信息是否完整：work_year为-1表示缺失
