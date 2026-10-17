@@ -545,7 +545,7 @@ JOBS = [
         "jd_id": "J003",
         "jd_text": "计算机视觉算法工程师\n地点：深圳\n经验：2年以上\n要求：\n- 精通PyTorch\n- 熟悉目标检测、图像分割\n- 有模型部署优化经验（TensorRT/ONNX）\n- 硕士优先",
         "expected": {"should_recommend": True, "reason": "候选人在CV领域有深厚积累"},
-        "key_skills": ["PyTorch", "Computer Vision", "TensorRT", "CUDA"],
+        "key_skills": ["PyTorch", "Computer Vision", "TensorRT", "CUDA", "计算机视觉", "目标检测"],
         "required_years": 2,
         "education": "硕士"
     },
@@ -553,7 +553,7 @@ JOBS = [
         "jd_id": "J004",
         "jd_text": "数据分析师（电商方向）\n地点：杭州\n经验：1-3年\n要求：\n- 精通SQL和Python\n- 熟练使用Tableau/Power BI\n- 有AB测试经验\n- 对数据敏感，逻辑清晰",
         "expected": {"should_recommend": True, "reason": "候选人数据分析和AB测试经验丰富"},
-        "key_skills": ["SQL", "Python", "Tableau", "AB Testing"],
+        "key_skills": ["SQL", "Python", "Tableau", "AB Testing", "数据分析", "统计分析", "AB测试"],
         "required_years": 2,
         "education": "本科"
     },
@@ -577,7 +577,7 @@ JOBS = [
         "jd_id": "J007",
         "jd_text": "AI产品经理\n地点：北京\n经验：2年以上\n要求：\n- 有AI产品从0到1经验\n- 懂技术，能与算法团队顺畅沟通\n- 熟悉Prompt Engineering、RAG原理\n- 有较强的数据分析能力",
         "expected": {"should_recommend": True, "reason": "候选人既懂技术又有产品经验"},
-        "key_skills": ["AI Product", "Prompt Engineering", "Data Analysis"],
+        "key_skills": ["AI产品", "提示词工程", "数据分析", "产品管理", "AIGC", "大模型", "需求分析"],
         "required_years": 2,
         "education": "本科"
     },
@@ -601,7 +601,7 @@ JOBS = [
         "jd_id": "J010",
         "jd_text": "机械结构工程师\n地点：东莞\n经验：3年以上\n要求：\n- 精通SolidWorks、ANSYS\n- 有消费电子结构设计经验\n- 熟悉模具工艺\n- 本科及以上学历",
         "expected": {"should_recommend": False, "reason": "候选人结构方向与岗位不完全匹配"},
-        "key_skills": ["SolidWorks", "ANSYS", "Mechanical Design"],
+        "key_skills": ["SolidWorks", "ANSYS", "机械设计", "结构设计"],
         "required_years": 3,
         "education": "本科"
     },
@@ -609,7 +609,7 @@ JOBS = [
         "jd_id": "J011",
         "jd_text": "量化交易研究员\n地点：上海\n经验：3年以上\n要求：\n- 数学/物理/金融工程背景\n- 精通Python、C++\n- 有量化策略开发经验\n- 熟悉时序预测、强化学习\n- 硕士及以上",
         "expected": {"should_recommend": True, "reason": "候选人量化投研背景与岗位要求契合"},
-        "key_skills": ["Python", "C++", "Quantitative Trading", "Time Series"],
+        "key_skills": ["Python", "C++", "量化交易", "量化", "金融建模", "时序预测"],
         "required_years": 3,
         "education": "硕士"
     },
@@ -625,7 +625,7 @@ JOBS = [
         "jd_id": "J013",
         "jd_text": "AI安全研究员\n地点：北京\n经验：2年以上\n要求：\n- 精通Python/Go\n- 熟悉LLM安全、Prompt注入检测\n- 有渗透测试经验\n- 有Top安全会议（USENIX Security/CCS）论文优先",
         "expected": {"should_recommend": True, "reason": "候选人正是AI安全方向顶级专家"},
-        "key_skills": ["Python", "LLM Security", "Penetration Testing", "Go"],
+        "key_skills": ["Python", "LLM安全", "渗透测试", "Go", "AI安全", "漏洞挖掘"],
         "required_years": 2,
         "education": "博士"
     },
@@ -633,7 +633,7 @@ JOBS = [
         "jd_id": "J014",
         "jd_text": "外贸业务员\n地点：宁波\n经验：1年以上\n要求：\n- 英语CET-6\n- 有B2B外贸经验\n- 熟悉阿里巴巴国际站\n- 本科及以上学历",
         "expected": {"should_recommend": False, "reason": "候选人方向不符"},
-        "key_skills": ["English", "Cross-border Trade", "B2B"],
+        "key_skills": ["英语", "跨境电商", "B2B外贸", "海外市场", "客户开发"],
         "required_years": 1,
         "education": "本科"
     },
@@ -641,7 +641,7 @@ JOBS = [
         "jd_id": "J015",
         "jd_text": "自动驾驶感知算法工程师\n地点：北京\n经验：3年以上\n要求：\n- 精通C++/Python\n- 熟悉视觉/激光雷达融合感知\n- 有量产项目经验\n- 硕士及以上",
         "expected": {"should_recommend": True, "reason": "候选人自动驾驶领域资深专家"},
-        "key_skills": ["C++", "Python", "Perception", "Sensor Fusion"],
+        "key_skills": ["C++", "Python", "感知", "传感器融合", "目标检测"],
         "required_years": 3,
         "education": "硕士"
     },
@@ -649,7 +649,7 @@ JOBS = [
         "jd_id": "J016",
         "jd_text": "人力资源BP\n地点：北京\n经验：3年以上\n要求：\n- 有互联网公司HRBP经验\n- 熟悉招聘、员工关系、绩效管理\n- 良好的沟通能力\n- 本科及以上学历",
         "expected": {"should_recommend": False, "reason": "岗位方向完全不同"},
-        "key_skills": ["HR", "Recruiting", "Employee Relations"],
+        "key_skills": ["招聘", "员工关系", "绩效管理", "HR", "人才盘点"],
         "required_years": 3,
         "education": "本科"
     },
@@ -657,7 +657,7 @@ JOBS = [
         "jd_id": "J017",
         "jd_text": "视频算法工程师（AIGC方向）\n地点：杭州\n经验：2年以上\n要求：\n- 精通Python、PyTorch\n- 熟悉Stable Diffusion、ControlNet\n- 有视频生成项目经验\n- 硕士及以上",
         "expected": {"should_recommend": True, "reason": "候选人视频大模型研究处于SOTA水平"},
-        "key_skills": ["Python", "PyTorch", "AIGC", "Diffusion Model"],
+        "key_skills": ["Python", "PyTorch", "AIGC", "视频生成", "视频理解"],
         "required_years": 2,
         "education": "硕士"
     },
@@ -673,7 +673,7 @@ JOBS = [
         "jd_id": "J019",
         "jd_text": "临床研发经理（制药方向）\n地点：苏州\n经验：5年以上\n要求：\n- 临床医学/药学博士\n- 有新药临床试验经验\n- 熟悉FDA/ NMPA申报流程\n- 团队管理能力",
         "expected": {"should_recommend": True, "reason": "候选人临床背景深厚且有AI医疗落地经验"},
-        "key_skills": ["Clinical Research", "PhD Medicine", "FDA"],
+        "key_skills": ["临床研究", "临床医学", "医学", "药品", "FDA", "临床试验", "药品注册"],
         "required_years": 5,
         "education": "博士"
     },
@@ -681,9 +681,281 @@ JOBS = [
         "jd_id": "J020",
         "jd_text": "农业技术推广专员\n地点：黑龙江\n经验：1年以上\n要求：\n- 农学相关专业本科\n- 有基层农技推广经验\n- 适应农村工作环境\n- 吃苦耐劳",
         "expected": {"should_recommend": False, "reason": "岗位与候选人背景完全不匹配"},
-        "key_skills": ["Agriculture", "Extension Services"],
+        "key_skills": ["农业", "农技推广", "种植", "农业服务"],
         "required_years": 1,
         "education": "本科"
+    },
+    {
+        "jd_id": "J021",
+        "jd_text": "UX设计师\n地点：北京\n经验：1年以上\n要求：\n- 精通Figma、Principle\n- 熟悉UX/UI设计流程\n- 有AI工具设计经验\n- 有作品集",
+        "expected": {"should_recommend": True, "reason": "候选人UX设计方向匹配"},
+        "key_skills": ["Figma", "Principle", "UX", "交互设计", "用户研究", "原型设计"],
+        "required_years": 1,
+        "education": "本科"
+    },
+    {
+        "jd_id": "J022",
+        "jd_text": "法务合规专员\n地点：北京\n经验：3年以上\n要求：\n- 熟悉知识产权与合同审查\n- 了解AI相关法规（生成式AI管理办法）\n- 有互联网公司法务经验",
+        "expected": {"should_recommend": True, "reason": "候选人法律合规背景匹配"},
+        "key_skills": ["法律合规", "知识产权", "合同审查", "生成式AI", "数据合规"],
+        "required_years": 3,
+        "education": "本科"
+    },
+    {
+        "jd_id": "J023",
+        "jd_text": "网络运维工程师\n地点：广州\n经验：2年以上\n要求：\n- 熟悉Linux/网络协议\n- 有5G/基站运维经验\n- 会Python自动化脚本\n- 责任心强",
+        "expected": {"should_recommend": True, "reason": "候选人网络运维经验匹配"},
+        "key_skills": ["网络运维", "5G", "Linux", "自动化", "监控", "Python"],
+        "required_years": 2,
+        "education": "本科"
+    },
+    {
+        "jd_id": "J024",
+        "jd_text": "财务分析师\n地点：上海\n经验：3年以上\n要求：\n- 熟悉财务建模与报表分析\n- 熟练使用Excel、SQL、Python(pandas)\n- 有上市公司审计经验者优先",
+        "expected": {"should_recommend": True, "reason": "候选人财务分析方向匹配"},
+        "key_skills": ["财务建模", "Excel", "SQL", "pandas", "审计", "报表分析"],
+        "required_years": 3,
+        "education": "本科"
+    },
+    {
+        "jd_id": "J025",
+        "jd_text": "芯片设计工程师\n地点：上海\n经验：3年以上\n要求：\n- 精通Verilog/SystemVerilog\n- 有SoC芯片架构设计经验\n- 熟悉模拟电路/数字前端\n- 有流片经验优先",
+        "expected": {"should_recommend": True, "reason": "候选人IC设计与芯片架构背景匹配"},
+        "key_skills": ["Verilog", "SystemVerilog", "芯片架构", "模拟电路", "SoC", "流片"],
+        "required_years": 3,
+        "education": "硕士"
+    },
+    {
+        "jd_id": "J026",
+        "jd_text": "量子计算研究员\n地点：北京\n经验：3年以上\n要求：\n- 物理/计算机博士优先\n- 精通量子算法与量子纠错\n- 有量子编译器开发经验\n- 发表顶刊论文优先",
+        "expected": {"should_recommend": True, "reason": "候选人量子计算方向深度匹配"},
+        "key_skills": ["量子计算", "量子纠错", "量子算法", "量子编译器", "Python"],
+        "required_years": 3,
+        "education": "博士"
+    },
+    {
+        "jd_id": "J027",
+        "jd_text": "视频特效师\n地点：杭州\n经验：2年以上\n要求：\n- 精通AE、PR\n- 熟悉Blender等三维工具\n- 有视频特效/合成项目经验\n- 有作品集",
+        "expected": {"should_recommend": True, "reason": "候选人视频特效方向匹配"},
+        "key_skills": ["AE", "PR", "Blender", "特效合成", "后期制作"],
+        "required_years": 2,
+        "education": "本科"
+    },
+    {
+        "jd_id": "J028",
+        "jd_text": "建筑结构工程师\n地点：武汉\n经验：3年以上\n要求：\n- 精通AutoCAD、PKPM、Revit\n- 有高层建筑设计经验\n- 熟悉国家结构设计规范\n- 有项目管理经验优先",
+        "expected": {"should_recommend": True, "reason": "候选人建筑结构背景匹配"},
+        "key_skills": ["AutoCAD", "PKPM", "Revit", "结构设计", "高层建筑", "施工管理"],
+        "required_years": 3,
+        "education": "本科"
+    },
+    {
+        "jd_id": "J029",
+        "jd_text": "供应链管理专员\n地点：深圳\n经验：2年以上\n要求：\n- 熟悉采购与供应商管理\n- 有跨境选品与供应链优化经验\n- 熟悉国际物流\n- 英语流利优先",
+        "expected": {"should_recommend": True, "reason": "候选人供应链方向匹配"},
+        "key_skills": ["供应链", "采购", "选品", "物流", "跨境电商", "英语"],
+        "required_years": 2,
+        "education": "本科"
+    },
+    {
+        "jd_id": "J030",
+        "jd_text": "推荐算法工程师\n地点：北京\n经验：3年以上\n要求：\n- 精通推荐系统召回/排序\n- 熟练使用TensorFlow、PyTorch\n- 有时空序列预测经验\n- 有大流量业务优化经验优先",
+        "expected": {"should_recommend": True, "reason": "候选人推荐系统与排序经验深度匹配"},
+        "key_skills": ["推荐系统", "排序", "特征工程", "深度学习", "时空预测", "TensorFlow"],
+        "required_years": 3,
+        "education": "硕士"
+    },
+    {
+        "jd_id": "J031",
+        "jd_text": "品牌设计师\n地点：上海\n经验：2年以上\n要求：\n- 精通PS、AI\n- 有品牌视觉/电商大促设计经验\n- 审美在线，创意能力强\n- 有完整作品集",
+        "expected": {"should_recommend": True, "reason": "候选人品牌设计背景匹配"},
+        "key_skills": ["品牌设计", "PS", "AI", "创意设计", "视觉传达", "电商设计"],
+        "required_years": 2,
+        "education": "本科"
+    },
+    {
+        "jd_id": "J032",
+        "jd_text": "行业研究员\n地点：深圳\n经验：3年以上\n要求：\n- 熟悉行业研究与深度报告撰写\n- 有TMT/科技赛道研究经验\n- 熟练使用Excel/数据工具\n- 逻辑清晰、表达能力强",
+        "expected": {"should_recommend": True, "reason": "候选人行业研究背景匹配"},
+        "key_skills": ["行业研究", "深度报告", "TMT", "数据分析", "Excel"],
+        "required_years": 3,
+        "education": "硕士"
+    },
+    {
+        "jd_id": "J033",
+        "jd_text": "通信协议工程师\n地点：北京\n经验：3年以上\n要求：\n- 精通C语言\n- 有5G/4G协议栈开发经验\n- 参与过通信标准制定优先\n- 熟悉LTE/NR协议架构",
+        "expected": {"should_recommend": True, "reason": "候选人5G协议开发背景匹配"},
+        "key_skills": ["5G", "协议栈", "C语言", "通信标准", "LTE", "NR"],
+        "required_years": 3,
+        "education": "硕士"
+    },
+    {
+        "jd_id": "J034",
+        "jd_text": "食品研发工程师\n地点：呼和浩特\n经验：3年以上\n要求：\n- 食品科学/生物工程背景\n- 有配方研发与工艺优化经验\n- 熟悉食品安全法规\n- 有团队管理经验优先",
+        "expected": {"should_recommend": True, "reason": "候选人食品研发背景匹配"},
+        "key_skills": ["食品研发", "配方", "工艺优化", "食品科学", "质量管理"],
+        "required_years": 3,
+        "education": "硕士"
+    },
+    {
+        "jd_id": "J035",
+        "jd_text": "用户研究员\n地点：杭州\n经验：2年以上\n要求：\n- 熟悉问卷、访谈、可用性测试\n- 会用眼动实验等研究方法\n- 能输出用户洞察报告\n- 有游戏/互联网研究经验优先",
+        "expected": {"should_recommend": True, "reason": "候选人用户研究背景匹配"},
+        "key_skills": ["用户研究", "问卷", "访谈", "可用性测试", "眼动实验", "数据分析"],
+        "required_years": 2,
+        "education": "硕士"
+    },
+    {
+        "jd_id": "J036",
+        "jd_text": "技术翻译\n地点：北京\n经验：2年以上\n要求：\n- 精通英语/德语\n- 有技术文档翻译经验\n- 有跨国项目协调经验优先\n- 汽车/制造行业背景加分",
+        "expected": {"should_recommend": True, "reason": "候选人翻译与项目管理背景匹配"},
+        "key_skills": ["翻译", "技术文档", "英语", "德语", "项目管理"],
+        "required_years": 2,
+        "education": "本科"
+    },
+    {
+        "jd_id": "J037",
+        "jd_text": "CAE仿真工程师\n地点：北京\n经验：3年以上\n要求：\n- 精通ANSYS等仿真软件\n- 有热分析/结构仿真经验\n- 熟悉流体或热防护方向\n- 有航天/军工经验优先",
+        "expected": {"should_recommend": True, "reason": "候选人仿真与热防护背景匹配"},
+        "key_skills": ["ANSYS", "仿真", "热分析", "结构力学", "流体", "热防护"],
+        "required_years": 3,
+        "education": "硕士"
+    },
+    {
+        "jd_id": "J038",
+        "jd_text": "教研老师（数学）\n地点：北京\n经验：2年以上\n要求：\n- 数学功底扎实\n- 有课程研发/教研经验\n- 熟悉K12教学大纲\n- 有线上教育经验优先",
+        "expected": {"should_recommend": True, "reason": "候选人数学教研背景匹配"},
+        "key_skills": ["数学", "教研", "课程设计", "教学设计", "K12"],
+        "required_years": 2,
+        "education": "本科"
+    },
+    {
+        "jd_id": "J039",
+        "jd_text": "内容策划\n地点：上海\n经验：3年以上\n要求：\n- 文案功底强\n- 有品牌内容策划经验\n- 熟悉社交媒体营销\n- 有团队管理经验优先",
+        "expected": {"should_recommend": True, "reason": "候选人内容策划背景匹配"},
+        "key_skills": ["内容策划", "文案", "创意", "品牌营销", "社交媒体"],
+        "required_years": 3,
+        "education": "本科"
+    },
+    {
+        "jd_id": "J040",
+        "jd_text": "航运调度主管\n地点：上海\n经验：5年以上\n要求：\n- 有远洋航行经验（船长/大副优先）\n- 熟悉船队调度与航运管理\n- 英语可作工作语言\n- 持相关航海证书",
+        "expected": {"should_recommend": True, "reason": "候选人远洋船长与调度背景匹配"},
+        "key_skills": ["航海技术", "船队调度", "航运管理", "英语", "远洋航行"],
+        "required_years": 5,
+        "education": "大专"
+    },
+    {
+        "jd_id": "J041",
+        "jd_text": "轮机工程师\n地点：上海\n经验：3年以上\n要求：\n- 持轮机长/轮机员证书\n- 熟悉船舶动力与机电设备\n- 有远洋船舶技术管理经验\n- 英语可作为工作语言",
+        "expected": {"should_recommend": True, "reason": "候选人轮机工程背景匹配"},
+        "key_skills": ["轮机工程", "船舶动力", "船舶技术", "机械", "英语"],
+        "required_years": 3,
+        "education": "大专"
+    },
+    {
+        "jd_id": "J042",
+        "jd_text": "插画师\n地点：不限\n经验：1年以上\n要求：\n- 手绘功底强\n- 熟悉PS/Procreate\n- 有商业接单与版权授权经验\n- 有个人作品集",
+        "expected": {"should_recommend": True, "reason": "候选人独立插画背景匹配"},
+        "key_skills": ["插画", "绘画", "PS", "Procreate", "版权授权"],
+        "required_years": 1,
+        "education": "不限"
+    },
+    {
+        "jd_id": "J043",
+        "jd_text": "投资分析师\n地点：北京\n经验：3年以上\n要求：\n- 有行业研究与投资分析经验\n- 熟悉尽调流程与估值建模\n- 关注新能源/科技赛道\n- 有PE/VC经验优先",
+        "expected": {"should_recommend": True, "reason": "候选人投资研究背景匹配"},
+        "key_skills": ["投资分析", "尽调", "估值建模", "行业研究", "新能源"],
+        "required_years": 3,
+        "education": "硕士"
+    },
+    {
+        "jd_id": "J044",
+        "jd_text": "纺织面料工程师\n地点：泉州\n经验：3年以上\n要求：\n- 纺织工程/材料背景\n- 有功能性面料开发经验\n- 熟悉面料工艺与测试\n- 有运动品牌经验优先",
+        "expected": {"should_recommend": True, "reason": "候选人面料开发背景匹配"},
+        "key_skills": ["面料开发", "纺织工程", "材料", "工艺", "测试"],
+        "required_years": 3,
+        "education": "硕士"
+    },
+    {
+        "jd_id": "J045",
+        "jd_text": "显示技术工程师\n地点：深圳\n经验：5年以上\n要求：\n- 熟悉OLED/显示面板技术\n- 有光电材料开发经验\n- 熟悉显示驱动与良率优化\n- 有团队管理经验优先",
+        "expected": {"should_recommend": True, "reason": "候选人OLED显示背景匹配"},
+        "key_skills": ["OLED", "显示技术", "光电", "材料开发", "面板"],
+        "required_years": 5,
+        "education": "硕士"
+    },
+    {
+        "jd_id": "J046",
+        "jd_text": "演员\n地点：横店/北京\n经验：1年以上\n要求：\n- 表演功底扎实\n- 有影视/网剧出演经验\n- 台词与形体训练扎实\n- 配合度高",
+        "expected": {"should_recommend": True, "reason": "候选人演艺背景匹配"},
+        "key_skills": ["表演", "台词", "影视", "网剧", "角色塑造"],
+        "required_years": 1,
+        "education": "不限"
+    },
+    {
+        "jd_id": "J047",
+        "jd_text": "课程研发总监（英语）\n地点：北京\n经验：5年以上\n要求：\n- 英语专业/教学背景\n- 有英语课程体系重构经验\n- 熟悉教学管理与师资培养\n- 有在线教育经验优先",
+        "expected": {"should_recommend": True, "reason": "候选人英语教学与课程研发背景匹配"},
+        "key_skills": ["课程研发", "英语", "教学管理", "课程体系", "师资培养"],
+        "required_years": 5,
+        "education": "硕士"
+    },
+    {
+        "jd_id": "J048",
+        "jd_text": "给排水工程师\n地点：广州\n经验：3年以上\n要求：\n- 精通AutoCAD、WaterCAD\n- 有市政管网设计经验\n- 熟悉污水处理工艺\n- 有水务项目管理经验优先",
+        "expected": {"should_recommend": True, "reason": "候选人给排水设计背景匹配"},
+        "key_skills": ["给排水", "AutoCAD", "WaterCAD", "管网设计", "污水处理", "水务"],
+        "required_years": 3,
+        "education": "本科"
+    },
+    {
+        "jd_id": "J049",
+        "jd_text": "兽医\n地点：深圳\n经验：2年以上\n要求：\n- 动物医学专业\n- 擅长犬猫外科手术\n- 有宠物医院临床经验\n- 执业兽医师资格证",
+        "expected": {"should_recommend": True, "reason": "候选人兽医临床背景匹配"},
+        "key_skills": ["兽医", "外科手术", "动物医学", "宠物医疗", "临床"],
+        "required_years": 2,
+        "education": "本科"
+    },
+    {
+        "jd_id": "J050",
+        "jd_text": "文物修复师\n地点：北京\n经验：3年以上\n要求：\n- 熟悉青铜器/陶瓷修复\n- 有博物馆修复工作经验\n- 掌握材料分析与传统工艺\n- 有文物保护意识",
+        "expected": {"should_recommend": True, "reason": "候选人文物修复背景匹配"},
+        "key_skills": ["文物修复", "青铜器", "陶瓷修复", "文物保护", "材料分析"],
+        "required_years": 3,
+        "education": "硕士"
+    },
+    {
+        "jd_id": "J051",
+        "jd_text": "资产评估师\n地点：上海\n经验：3年以上\n要求：\n- 持有资产评估师证书\n- 有企业并购估值经验\n- 熟悉财务分析与尽调\n- 有上市公司评估经验优先",
+        "expected": {"should_recommend": True, "reason": "候选人资产评估背景匹配"},
+        "key_skills": ["资产评估", "估值", "并购", "财务分析", "尽调"],
+        "required_years": 3,
+        "education": "本科"
+    },
+    {
+        "jd_id": "J052",
+        "jd_text": "隧道工程师\n地点：成都\n经验：3年以上\n要求：\n- 土木工程/岩土背景\n- 有深埋隧道施工经验\n- 熟悉盾构施工技术\n- 有现场技术管理经验",
+        "expected": {"should_recommend": True, "reason": "候选人隧道工程背景匹配"},
+        "key_skills": ["隧道工程", "盾构", "土木工程", "岩土", "施工管理", "CAD"],
+        "required_years": 3,
+        "education": "本科"
+    },
+    {
+        "jd_id": "J053",
+        "jd_text": "材料科研工程师\n地点：苏州\n经验：1年以上\n要求：\n- 材料/化学背景\n- 有纳米材料/二维材料合成经验\n- 熟悉实验室分析仪器\n- 有科研论文发表优先",
+        "expected": {"should_recommend": True, "reason": "候选人材料科研背景匹配"},
+        "key_skills": ["纳米材料", "二维材料", "材料合成", "实验室", "化学"],
+        "required_years": 1,
+        "education": "硕士"
+    },
+    {
+        "jd_id": "J054",
+        "jd_text": "机器人算法工程师\n地点：深圳\n经验：2年以上\n要求：\n- 精通Python、C++\n- 熟悉ROS、Gazebo等机器人开发框架\n- 有路径规划/运动控制算法经验\n- 有无人机/机器人产品落地经验优先",
+        "expected": {"should_recommend": True, "reason": "候选人机器人路径规划背景匹配"},
+        "key_skills": ["Python", "C++", "ROS", "Gazebo", "路径规划", "运动控制"],
+        "required_years": 2,
+        "education": "硕士"
     },
 ]
 

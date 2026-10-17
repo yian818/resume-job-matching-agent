@@ -35,7 +35,10 @@ def extract_skills(text: str) -> set:
 
     m = re.search(r"技能：(.+)", text)
     if m:
-        skills |= {_normalize_skill(s.strip()) for s in m.group(1).split(",") if s.strip()}
+        for s in m.group(1).split(","):
+            s = re.sub(r"[（(].*?[)）]", "", s.strip()).strip()  # 去掉括号备注：英语(CET-6)->英语
+            if s:
+                skills.add(_normalize_skill(s))
 
     # 兜底1：技术栈：Java, Spring Boot, MySQL, Redis, Kafka
     m = re.search(r"技术栈：(.+)", text)
