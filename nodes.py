@@ -43,7 +43,8 @@ class ResumeInfo(BaseModel):
     name: str = Field(description="候选人姓名，只输出名字本身，不要加性别年龄")
     education: str = Field(description="最高学历，只能填：博士/硕士/本科/大专/高中，不要输出学校名")
     work_year: int = Field(description="总工作年限数字，按毕业年份到2026年计算，实习不算，无法确定填-1")
-    skill: list[str] = Field(description="技术栈关键词列表，每个词单独一个元素")
+    career: str = Field(description="职业身份：候选人最近一段工作经历的职位名称（如'内容策略产品经理'、'隧道工程师'、'首席医学官'），不要输出公司名")
+    skill: list[str] = Field(description="全部技能关键词列表（技术栈+语言+行业业务+软技能），每个词单独一个元素")
     project: str = Field(description="项目经历一句话摘要")
 
 def extract_resume_node(state: AgentState) -> AgentState:
@@ -56,13 +57,14 @@ def extract_resume_node(state: AgentState) -> AgentState:
 1. name: 只输出姓名本身，不要加性别、年龄
 2. education: 只能填"博士"/"硕士"/"本科"/"大专"/"高中"之一，不要输出学校名和专业
 3. work_year: 只输出数字（整数），按毕业年份到2026年算总工作年限，无法确定填-1
-4. skill: 候选人的**全部**技能清单，每项单独一个元素。务必包含四类，缺一不可：
+4. career: 候选人最近一段工作经历的职位名称（如"内容策略产品经理"、"隧道工程师"、"首席医学官"、"数据分析师"），只输出职位本身，不要公司名和修饰语
+5. skill: 候选人的**全部**技能清单，每项单独一个元素。务必包含四类，缺一不可：
    - 技术栈：Python、SQL、PyTorch、LangGraph 等
    - 语言能力：英语(CET-6)、德语、日语 等（保留语言名称即可，括号里的等级说明可去掉）
    - 行业/业务技能：跨境电商、供应链管理、临床医学、外贸、内容运营、产品管理 等
    - 专业软技能：项目管理、团队管理、数据分析 等
    逐项提取简历原文里出现的，不要自创、不要合并
-5. project: 一句话概括最重要的项目经历
+6. project: 一句话概括最重要的项目经历
 
 简历文本：
 {state['resume_text']}"""
@@ -80,7 +82,9 @@ def extract_resume_node(state: AgentState) -> AgentState:
         if text.startswith("```"):
             text = text.split("\n", 1)[1] if "\n" in text else text[3:]
             text = text.rsplit("```", 1)[0].strip()
-        result = ResumeInfo(**json.loads(text))
+        parsed = json.loads(text)
+        parsed.setdefault("career", "")   # 兜底输出可能漏 career，缺失填空串
+        result = ResumeInfo(**parsed)
 
 
     state['resume_info'] = result.dict()
@@ -239,6 +243,12 @@ def match_jobs_node(state: AgentState) -> AgentState:
 1. 不匹配的岗位给30分以下，不要都给高分
 2. 核心技能完全不沾边的，直接打20分以下
 3. 有明显不匹配的，要在理由里说明
+4. **职业身份优先（关键）**：候选人的 career 字段是他真实的职位身份。
+   - 候选人是"产品经理/运营/研究员/设计师"等职能岗时，优先匹配对应职能岗位，
+     不要仅凭"会 SQL/Python"就把技术岗（数据分析师/算法工程师）排到前面；
+   - 候选人是"XX工程师/算法专家"等技术岗时，优先匹配技术岗位；
+   - 当两个岗位技能重合度接近时，**与 career 职能更接近的岗位得分应更高**，
+     并在理由中写明"候选人的职业身份是XX，更匹配本岗位"。
 
 候选人简历：
 {json.dumps(resume_info, ensure_ascii=False)}

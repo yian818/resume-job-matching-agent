@@ -39,6 +39,8 @@ def build_resume_text(resume_info: dict) -> str:
     parts.append(f"候选人：{resume_info.get('name', '')}")
     parts.append(f"学历：{resume_info.get('education', '')}")
     parts.append(f"工作年限：{resume_info.get('work_year', 0)}年")
+    if resume_info.get('career'):
+        parts.append(f"职业身份：{resume_info['career']}")   # P8：让重排器也看到真实职位
     parts.append(f"技能：{', '.join(resume_info.get('skill', []))}")
     if resume_info.get('project'):
         parts.append(f"项目：{resume_info['project']}")
