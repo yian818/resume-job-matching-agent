@@ -89,17 +89,19 @@
     <div class="matches" id="matchesList"></div>
 
     <div class="tabs" id="adviceTabs" style="display:none">
-      <button class="tab active" data-panel="advice">简历优化建议</button>
+      <button class="tab active" data-panel="explanation">匹配解读</button>
+      <button class="tab" data-panel="advice">简历优化建议</button>
       <button class="tab" data-panel="interview">模拟面试题</button>
       <button class="tab" data-panel="debug">信号明细</button>
     </div>
-    <div class="card tab-panel active" id="panel-advice"></div>
+    <div class="card tab-panel active" id="panel-explanation"></div>
+    <div class="card tab-panel" id="panel-advice"></div>
     <div class="card tab-panel" id="panel-interview"></div>
     <div class="card tab-panel" id="panel-debug"></div>
   </section>
 
   <footer class="footer">
-    <span>ResumeMatch AI · 简历-岗位匹配 Agent · P11 工程化</span>
+    <span>ResumeMatch AI · 简历-岗位匹配 Agent · P12 可解释报告</span>
     <span><code>POST /api/v1/match</code> · Bearer Token</span>
   </footer>
 </div>

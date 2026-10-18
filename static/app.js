@@ -142,6 +142,7 @@
   function render(data, includeAdvice) {
     const c = data.candidate || {};
     const matches = data.matches || [];
+    const expl = data.explanation || {};
 
     /* candidate */
     const initials = (c.name || "?").trim().slice(0, 1);
@@ -166,12 +167,23 @@
       .map((m, i) => {
         const sig = m.signals || {};
         const ring = scoreRing(m.score);
+        const ej = (expl.per_job || []).find((p) => p.job === m.job) || {};
+        const ejSkills = ej.skills || {};
+        const chips = [
+          ...(ejSkills.hit || []).slice(0, 6).map(
+            (s) => `<span class="chip chip-hit" title="已命中">✓ ${escapeHtml(s)}</span>`
+          ),
+          ...(ejSkills.gap || []).slice(0, 6).map(
+            (s) => `<span class="chip chip-gap" title="岗位要求，简历缺失">+ ${escapeHtml(s)}</span>`
+          ),
+        ].join("");
         return `
         <article class="match ${i === 0 ? "top" : ""}" style="animation-delay:${i * 55}ms">
           <div class="rank">${m.rank}</div>
           <div class="match-body">
             <div class="match-title">${escapeHtml(m.job)}</div>
             <div class="match-reason">${escapeHtml(m.reason || "")}</div>
+            ${chips ? `<div class="match-skills">${chips}</div>` : ""}
             <div class="signals">
               ${signalBar("规则", sig.rule)}
               ${signalBar("LLM", sig.llm)}
@@ -197,17 +209,19 @@
       });
     });
 
-    /* advice tabs */
-    if (includeAdvice && data.advice) {
-      $("adviceTabs").style.display = "flex";
-      const parts = splitAdvice(data.advice);
-      $("panel-advice").innerHTML = `<pre>${escapeHtml(parts.advice || "无")}</pre>`;
-      $("panel-interview").innerHTML = `<pre>${escapeHtml(parts.interview || "无")}</pre>`;
-      $("panel-debug").innerHTML = renderDebug(matches);
-      activateTab("advice");
-    } else {
-      $("adviceTabs").style.display = "none";
-    }
+    /* advice + explanation tabs */
+    const parts =
+      includeAdvice && data.advice ? splitAdvice(data.advice) : { advice: "", interview: "" };
+    $("panel-advice").innerHTML = parts.advice
+      ? `<pre>${escapeHtml(parts.advice)}</pre>`
+      : '<div style="color:var(--muted);padding:4px">未生成优化建议</div>';
+    $("panel-interview").innerHTML = parts.interview
+      ? `<pre>${escapeHtml(parts.interview)}</pre>`
+      : '<div style="color:var(--muted);padding:4px">未生成模拟面试题</div>';
+    renderExplanation(expl, matches);
+    $("panel-debug").innerHTML = renderDebug(matches);
+    $("adviceTabs").style.display = "flex";
+    activateTab(parts.advice ? "advice" : "explanation");
   }
 
   function scoreRing(score) {
@@ -239,26 +253,68 @@
     };
   }
 
-  function renderDebug(matches) {
-    const rows = matches
-      .map((m) => {
-        const s = m.signals || {};
-        return `<tr>
-          <td>${m.rank}</td><td>${escapeHtml(m.job)}</td><td>${m.score}</td>
-          <td>${s.rule ?? "—"}</td><td>${s.llm ?? "—"}</td>
-          <td>${s.rerank ?? "—"}</td><td>${s.career ?? 0}</td><td>${s.cap ?? "—"}</td>
-        </tr>`;
-      })
-      .join("");
-    return `<pre style="font-family:var(--font)">四信号明细（规则 / LLM / 重排 / 职业身份 / 硬上限）</pre>
-      <div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:13px">
-        <thead><tr style="color:var(--muted);text-align:left">
-          <th style="padding:8px">#</th><th>岗位</th><th>最终</th><th>规则</th>
-          <th>LLM</th><th>重排</th><th>身份</th><th>上限</th>
-        </tr></thead>
-        <tbody>${rows.replace(/<td/g, '<td style="padding:8px;border-top:1px solid var(--border)"')}</tbody>
-      </table></div>`;
-  }
+    /* ---------- P12 可解释报告 ---------- */
+    function renderExplanation(expl, matches) {
+      const panel = $("panel-explanation");
+      if (!panel) return;
+      if (!expl.summary) {
+        panel.innerHTML = '<div style="color:var(--muted);padding:4px">暂无解读</div>';
+        return;
+      }
+
+      const rows = (expl.per_job || [])
+        .map((p) => {
+          const cells = [];
+          if (p.verdict) cells.push(`<div class="x-verdict">${escapeHtml(p.verdict)}</div>`);
+          if (p.career) cells.push(`<div>🧭 ${escapeHtml(p.career)}</div>`);
+          if (p.years) cells.push(`<div>🕓 ${escapeHtml(p.years)}</div>`);
+          if (p.education) cells.push(`<div>🎓 ${escapeHtml(p.education)}</div>`);
+          if (p.cap) cells.push(`<div class="x-warn">⚠️ ${escapeHtml(p.cap)}</div>`);
+          const chips = [
+            ...(p.skills?.hit || []).map(
+              (s) => `<span class="chip chip-hit">✓ ${escapeHtml(s)}</span>`
+            ),
+            ...(p.skills?.gap || []).map(
+              (s) => `<span class="chip chip-gap">+ ${escapeHtml(s)}</span>`
+            ),
+          ].join("");
+          return `<div class="x-row">
+            <div class="x-job">${escapeHtml(p.job)}</div>
+            ${cells.join("")}
+            ${chips ? `<div class="chips" style="margin-top:10px">${chips}</div>` : ""}
+          </div>`;
+        })
+        .join("");
+
+      panel.innerHTML = `
+        <div class="x-summary">${expl.summary
+          .split("\n")
+          .filter(Boolean)
+          .map((s) => `<p>${escapeHtml(s)}</p>`)
+          .join("")}</div>
+        <div class="x-rows">${rows || '<div style="color:var(--muted)">暂无逐岗位分析</div>'}</div>`;
+    }
+
+    function renderDebug(matches) {
+      const rows = matches
+        .map((m) => {
+          const s = m.signals || {};
+          return `<tr>
+            <td>${m.rank}</td><td>${escapeHtml(m.job)}</td><td>${m.score}</td>
+            <td>${s.rule ?? "—"}</td><td>${s.llm ?? "—"}</td>
+            <td>${s.rerank ?? "—"}</td><td>${s.career ?? 0}</td><td>${s.cap ?? "—"}</td>
+          </tr>`;
+        })
+        .join("");
+      return `<pre style="font-family:var(--font)">四信号明细（规则 / LLM / 重排 / 职业身份 / 硬上限）</pre>
+        <div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:13px">
+          <thead><tr style="color:var(--muted);text-align:left">
+            <th style="padding:8px">#</th><th>岗位</th><th>最终</th><th>规则</th>
+            <th>LLM</th><th>重排</th><th>身份</th><th>上限</th>
+          </tr></thead>
+          <tbody>${rows.replace(/<td/g, '<td style="padding:8px;border-top:1px solid var(--border)"')}</tbody>
+        </table></div>`;
+    }
 
   /* ---------- tabs ---------- */
   function activateTab(name) {

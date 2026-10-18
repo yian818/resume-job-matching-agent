@@ -40,6 +40,9 @@
   --accent: #0d9488;
   --accent-2: #4f46e5;
   --accent-3: #db2777;
+  --success: #059669;
+  --warn: #b45309;
+  --danger: #dc2626;
   --shadow: 0 24px 60px -24px rgba(20, 30, 60, 0.25);
 }
 
@@ -623,6 +626,52 @@ h1 {
   padding: 2px 6px;
   border-radius: 5px;
 }
+
+/* ---------- P12: 可解释报告 ---------- */
+.chip-hit {
+  color: var(--success);
+  border-color: color-mix(in srgb, var(--success) 32%, var(--border));
+  background: color-mix(in srgb, var(--success) 9%, transparent);
+}
+.chip-gap {
+  color: var(--warn);
+  border-color: color-mix(in srgb, var(--warn) 32%, var(--border));
+  background: color-mix(in srgb, var(--warn) 9%, transparent);
+}
+.match-skills { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 9px; }
+.match-skills .chip { padding: 3px 9px; font-size: 11px; }
+
+.x-summary { margin-bottom: 20px; }
+.x-summary p {
+  margin: 0 0 9px;
+  color: var(--muted);
+  font-size: 13.5px;
+  line-height: 1.7;
+}
+.x-summary p:first-child { color: var(--text); font-size: 14.5px; font-weight: 500; }
+.x-rows { display: flex; flex-direction: column; gap: 12px; }
+.x-row {
+  padding: 15px 17px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.75;
+}
+.x-job { font-weight: 700; color: var(--text); font-size: 14px; margin-bottom: 6px; }
+.x-verdict {
+  display: inline-block;
+  margin-bottom: 6px;
+  padding: 2px 9px;
+  border-radius: 999px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--accent);
+  border: 1px solid color-mix(in srgb, var(--accent) 35%, var(--border));
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
+}
+.x-warn { color: var(--warn); }
 
 /* ---------- responsive ---------- */
 @media (max-width: 720px) {

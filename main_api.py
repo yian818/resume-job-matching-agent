@@ -20,6 +20,7 @@ import uvicorn
 
 from nodes import extract_resume_node, match_jobs_node, resume_optimize_node, interview_question_node
 from scoring_rules import compute_rule_score, hard_cap, career_match_score
+from explain import build_explanation
 from database import get_all_jobs
 from state import AgentState
 
@@ -81,10 +82,32 @@ class Candidate(BaseModel):
     project: str = ""
 
 
+class ExplainSkills(BaseModel):
+    hit: list[str] = []
+    gap: list[str] = []
+
+
+class JobExplain(BaseModel):
+    job: str
+    verdict: str = ""
+    career: str = ""
+    years: str = ""
+    education: str = ""
+    cap: str = ""
+    skills: ExplainSkills = ExplainSkills()
+
+
+class ExplainReport(BaseModel):
+    summary: str = ""
+    verdict: str = ""
+    per_job: list[JobExplain] = []
+
+
 class MatchResponse(BaseModel):
     success: bool
     candidate: Optional[Candidate] = None
     matches: list[JobMatch] = []
+    explanation: Optional[ExplainReport] = None
     advice: Optional[str] = None
     error: Optional[str] = None
 
@@ -125,7 +148,8 @@ def run_match(resume_text: str, include_advice: bool = False) -> dict:
         if s.get("rerank_score") is not None:
             signals.rerank = round(float(s["rerank_score"]) * 100, 1)
         if job:
-            signals.rule = compute_rule_score(job, info)
+            s["rule_score"] = compute_rule_score(job, info)   # 缓存，解释层复用
+            signals.rule = s["rule_score"]
             signals.cap = hard_cap(job, info)
             signals.career = career_match_score(job, info)
         matches.append(JobMatch(
@@ -135,6 +159,9 @@ def run_match(resume_text: str, include_advice: bool = False) -> dict:
             reason=s.get("reason", ""),
             signals=signals,
         ))
+
+    # P12：可解释报告（纯确定性计算，不经过 LLM）
+    explanation = ExplainReport(**build_explanation(job_db, scores, info))
 
     advice = None
     if include_advice:
@@ -153,6 +180,7 @@ def run_match(resume_text: str, include_advice: bool = False) -> dict:
             project=info.get("project", ""),
         ),
         "matches": matches,
+        "explanation": explanation,
         "advice": advice,
     }
 

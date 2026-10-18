@@ -7,7 +7,7 @@
 - **简历结构化抽取**：Pydantic 强约束 + 三层降级解析 + 确定性技能补抽，抽取漏抽率 0%
 - **混合检索架构**：SQL 硬过滤 → RAG 向量召回（ChromaDB + BGE-large-zh-v1.5）→ 关键词补足
 - **四信号融合打分**：规则引擎 + LLM + cross-encoder 重排 + 职业身份，硬上限兜底防翻车
-- **可解释报告**：每个岗位展示 规则/LLM/重排/职业身份 四信号明细
+- **可解释报告**：每个岗位解读 为什么（技能命中/缺口、职业身份、硬上限），总评段落确定性生成、零 LLM 幻觉风险
 - **Web 前端**：深色玻璃拟态 UI，粘贴/拖拽简历即出匹配报告（纯静态，无构建）
 - **API 鉴权**：Bearer Token，Docker 一键部署
 - **评测体系**：50 份人工标注简历测试集，**Top-1 98%、Top-3 100%、MRR 0.99**
@@ -37,6 +37,7 @@ Resume-Job Matching Agent/
 ├── main.py              # LangGraph 主流程编排
 ├── main_api.py          # FastAPI Web服务（结构化API + 鉴权）
 ├── nodes.py             # 节点函数（抽取/匹配/补抽）
+├── explain.py           # 可解释报告层（确定性解读，零LLM）
 ├── state.py             # AgentState 状态定义
 ├── retriever.py         # RAG语义检索层（ChromaDB + BGE）
 ├── database.py          # SQLite 岗位数据库
@@ -58,6 +59,7 @@ Resume-Job Matching Agent/
     ├── manual_answers.json  # 人工标注标准答案
     ├── eval_match_v2_batch.py # 分批评测（断点续跑）
     ├── metrics.py           # MRR / NDCG 排序质量指标
+    ├── check_explain.py     # 解释层回归测试
     ├── label_audit_v3.py    # 标答 vs 简历客观事实复核
     ├── diagnose_cases.py    # 四信号诊断
     └── import_jobs.py       # 导入岗位到数据库
@@ -107,6 +109,8 @@ curl -X POST http://localhost:8000/api/v1/match \
 ```
 
 未配置 `API_TOKEN` 时本地开发直接放行。前端右上角可填 Token（存 localStorage）。
+
+响应结构：`candidate` 候选人画像 · `matches` 岗位排行（含四信号明细）· `explanation` 可解释报告（Top-1 总评 + 逐岗位解读：技能命中/缺口、职业身份、年限、学历、硬上限）。
 
 ## 📊 评测结果（50 份人工标注简历，客观标答）
 
