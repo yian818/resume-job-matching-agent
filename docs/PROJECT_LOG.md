@@ -689,7 +689,7 @@ P8 当时在"模型输出导向"的错误标答上验证，Top-1 报过 94%，**
 - 确定性自测：用例1（无 career 加分）与用例2（career 命中 → verdict 带"职业身份一致"、career 行 +20）均通过（`python explain.py`，不调 LLM/向量库）
 - 端到端回归：`python eval/check_explain.py` 走真实流水线，不变量校验通过：per_job 数量==matches 数量、每岗位有 years/education/career 解读、hit/gap 为列表
 - 新增 `eval/check_explain.py` 作为解释层回归测试（防解释层与匹配结果漂移）
-- **回归时发现的信号分歧案例（记录待查，非本轮修复范围）**：张明简历（LangGraph/RAG/Milvus/Prompt 工程/AI客服Agent 项目）Top-1 = NLP算法工程师 85（重排路 58），AI Agent工程师 rank2 中等匹配。三路最大差 42 分。疑因：① career=高级算法工程师（含"算法"类目）把重排与规则拉向算法技术岗；② "Agent"技能域在该重排参照下得分低。属 P11 修 bug 前已存在的排位，非解释层引入。按"要客观"原则不 tune，留待用户决定是否专门排查。
+- **回归时发现的信号分歧案例（记录待查，非本轮修复范围）**：张明简历（LangGraph/RAG/Milvus/Prompt 工程/AI客服Agent 项目）在两次独立运行中 Top-1 在 AI Agent工程师 86 与 NLP算法工程师 85 之间**翻转**（回归测试跑出 NLP85，HTTP 冒烟跑出 AI Agent86）。两岗分数只差 1 分：AI Agent 赢在技能重合 5 项但 career 不匹配，NLP 赢在 career+20 但只重合 2 项。说明 LLM 抽取/打分波动会让伯仲之间的岗位翻车。属 P11 修 bug 前已存在的现象，非解释层引入。按"要客观"原则不 tune，留作 P13 候选（稳定性：同简历跑 N 次统计 Top-1 方差 / temperature=0 / 多数表决）。
 
 ### 关键认知
 1. **可解释性本身也要可解释**：解释层的每一句话都能追溯到一行代码算出来的事实（`skill_overlap`/`career_match_score`/`hard_cap`）——这是和"让 LLM 解释自己"最本质的区别。面试时这一句就是分水岭。

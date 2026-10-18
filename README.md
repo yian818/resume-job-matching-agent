@@ -60,6 +60,7 @@ Resume-Job Matching Agent/
     ├── eval_match_v2_batch.py # 分批评测（断点续跑）
     ├── metrics.py           # MRR / NDCG 排序质量指标
     ├── check_explain.py     # 解释层回归测试
+    ├── smoke_p12_api.py     # HTTP 冒烟（验证 /api/v1/match 返回 explanation）
     ├── label_audit_v3.py    # 标答 vs 简历客观事实复核
     ├── diagnose_cases.py    # 四信号诊断
     └── import_jobs.py       # 导入岗位到数据库
