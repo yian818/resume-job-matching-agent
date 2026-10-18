@@ -8,6 +8,8 @@
 - **混合检索架构**：SQL 硬过滤 → RAG 向量召回（ChromaDB + BGE-large-zh-v1.5）→ 关键词补足
 - **四信号融合打分**：规则引擎 + LLM + cross-encoder 重排 + 职业身份，硬上限兜底防翻车
 - **可解释报告**：每个岗位解读 为什么（技能命中/缺口、职业身份、硬上限），总评段落确定性生成、零 LLM 幻觉风险
+- **在线评测台**（`/eval`）：拖动四信号权重，Top-1 / MRR / NDCG 即时刷新；四信号原值缓存，融合层纯函数重算，调参不烧 LLM
+- **稳定性评估**：同一简历重复跑 N 次，量化 Top-1 翻转率与标答跨重复命中率
 - **Web 前端**：深色玻璃拟态 UI，粘贴/拖拽简历即出匹配报告（纯静态，无构建）
 - **API 鉴权**：Bearer Token，Docker 一键部署
 - **评测体系**：50 份人工标注简历测试集，**Top-1 98%、Top-3 100%、MRR 0.99**
@@ -43,7 +45,7 @@ Resume-Job Matching Agent/
 ├── database.py          # SQLite 岗位数据库
 ├── scoring_rules.py     # 规则引擎 + 职业身份匹配 + 硬上限
 ├── reranker.py          # cross-encoder 语义重排
-├── static/              # Web 前端（index.html / styles.css / app.js）
+├── static/              # Web 前端（index.html / styles.css / app.js / eval.html / eval.js）
 ├── Dockerfile           # 生产镜像
 ├── docker-compose.yml   # 一键启动
 ├── requirements.txt
@@ -59,6 +61,8 @@ Resume-Job Matching Agent/
     ├── manual_answers.json  # 人工标注标准答案
     ├── eval_match_v2_batch.py # 分批评测（断点续跑）
     ├── metrics.py           # MRR / NDCG 排序质量指标
+    ├── stability_eval.py    # 排序稳定性评测（Top-1翻转率）
+    ├── eval_cache.py        # 在线评测台：四信号缓存 + 权重模拟（纯函数）
     ├── check_explain.py     # 解释层回归测试
     ├── smoke_p12_api.py     # HTTP 冒烟（验证 /api/v1/match 返回 explanation）
     ├── label_audit_v3.py    # 标答 vs 简历客观事实复核
@@ -112,6 +116,8 @@ curl -X POST http://localhost:8000/api/v1/match \
 未配置 `API_TOKEN` 时本地开发直接放行。前端右上角可填 Token（存 localStorage）。
 
 响应结构：`candidate` 候选人画像 · `matches` 岗位排行（含四信号明细）· `explanation` 可解释报告（Top-1 总评 + 逐岗位解读：技能命中/缺口、职业身份、年限、学历、硬上限）。
+
+**稳定性配置**（可选，P13）：`LLM_TEMPERATURE`（默认 0.1）与 `SCORE_RUNS`（默认 1）两个开关。实测 `temp0 + SCORE_RUNS=3` 能把分数波动从 ±6 压到 ±1，但**没有消除**近分岗位的 Top-1 翻转（标答集翻转 1/5 → 2/5，瓶颈在抽取层方差），因此默认关闭；完整数据见 `eval/stability_*.json` 与 `docs/PROJECT_LOG.md` P13。
 
 ## 📊 评测结果（50 份人工标注简历，客观标答）
 

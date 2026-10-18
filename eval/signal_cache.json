@@ -1,0 +1,859 @@
+{
+  "built_at": "2026-10-18 22:39:40",
+  "config": {
+    "temperature": "0.1",
+    "score_runs": "1"
+  },
+  "cases": {
+    "R001": {
+      "truth": "AI Agent工程师",
+      "jobs": [
+        {
+          "job": "AI Agent工程师（产品部）",
+          "rule": 68,
+          "llm": 95,
+          "rerank": 99.2,
+          "cap": 100,
+          "final": 85
+        },
+        {
+          "job": "NLP算法工程师（技术部）",
+          "rule": 90,
+          "llm": 72,
+          "rerank": 43.0,
+          "cap": 100,
+          "final": 70
+        },
+        {
+          "job": "推荐算法工程师（技术部）",
+          "rule": 77,
+          "llm": 58,
+          "rerank": 31.2,
+          "cap": 100,
+          "final": 58
+        },
+        {
+          "job": "大模型算法工程师（技术部）",
+          "rule": 73,
+          "llm": 62,
+          "rerank": 29.5,
+          "cap": 100,
+          "final": 57
+        },
+        {
+          "job": "视频算法工程师（技术部）",
+          "rule": 86,
+          "llm": 50,
+          "rerank": 26.6,
+          "cap": 100,
+          "final": 57
+        },
+        {
+          "job": "自动驾驶感知算法工程师（技术部）",
+          "rule": 78,
+          "llm": 26,
+          "rerank": 23.5,
+          "cap": 100,
+          "final": 46
+        },
+        {
+          "job": "机器人算法工程师（产品部）",
+          "rule": 77,
+          "llm": 28,
+          "rerank": 15.3,
+          "cap": 100,
+          "final": 44
+        },
+        {
+          "job": "AI产品经理（产品部）",
+          "rule": 40,
+          "llm": 44,
+          "rerank": 47.1,
+          "cap": 40,
+          "final": 40
+        },
+        {
+          "job": "AI安全研究员（技术部）",
+          "rule": 40,
+          "llm": 35,
+          "rerank": 37.3,
+          "cap": 40,
+          "final": 38
+        },
+        {
+          "job": "量子计算研究员（技术部）",
+          "rule": 40,
+          "llm": 22,
+          "rerank": 14.0,
+          "cap": 40,
+          "final": 27
+        }
+      ]
+    },
+    "R002": {
+      "truth": "后端开发工程师",
+      "jobs": [
+        {
+          "job": "后端开发工程师（设计部）",
+          "rule": 90,
+          "llm": 95,
+          "rerank": 99.7,
+          "cap": 100,
+          "final": 94
+        },
+        {
+          "job": "前端开发工程师（技术部）",
+          "rule": 25,
+          "llm": 15,
+          "rerank": 37.3,
+          "cap": 25,
+          "final": 25
+        },
+        {
+          "job": "数据分析师（技术部）",
+          "rule": 25,
+          "llm": 18,
+          "rerank": 4.4,
+          "cap": 25,
+          "final": 17
+        },
+        {
+          "job": "Flutter移动端开发工程师（技术部）",
+          "rule": 25,
+          "llm": 18,
+          "rerank": 3.8,
+          "cap": 25,
+          "final": 17
+        },
+        {
+          "job": "网络运维工程师（技术部）",
+          "rule": 25,
+          "llm": 18,
+          "rerank": 6.1,
+          "cap": 25,
+          "final": 17
+        },
+        {
+          "job": "量化交易研究员（技术部）",
+          "rule": 25,
+          "llm": 15,
+          "rerank": 4.6,
+          "cap": 25,
+          "final": 16
+        },
+        {
+          "job": "通信协议工程师（技术部）",
+          "rule": 25,
+          "llm": 15,
+          "rerank": 6.6,
+          "cap": 25,
+          "final": 16
+        },
+        {
+          "job": "用户研究员（技术部）",
+          "rule": 25,
+          "llm": 15,
+          "rerank": 5.7,
+          "cap": 25,
+          "final": 16
+        },
+        {
+          "job": "内容策划（技术部）",
+          "rule": 25,
+          "llm": 15,
+          "rerank": 4.2,
+          "cap": 25,
+          "final": 16
+        },
+        {
+          "job": "AI安全研究员（技术部）",
+          "rule": 25,
+          "llm": 15,
+          "rerank": 2.7,
+          "cap": 25,
+          "final": 15
+        }
+      ]
+    },
+    "R003": {
+      "truth": "自动驾驶感知算法工程师",
+      "jobs": [
+        {
+          "job": "自动驾驶感知算法工程师（技术部）",
+          "rule": 79,
+          "llm": 86,
+          "rerank": 82.9,
+          "cap": 100,
+          "final": 82
+        },
+        {
+          "job": "计算机视觉算法工程师（技术部）",
+          "rule": 90,
+          "llm": 95,
+          "rerank": 46.1,
+          "cap": 100,
+          "final": 78
+        },
+        {
+          "job": "NLP算法工程师（技术部）",
+          "rule": 83,
+          "llm": 52,
+          "rerank": 32.2,
+          "cap": 100,
+          "final": 58
+        },
+        {
+          "job": "视频算法工程师（技术部）",
+          "rule": 79,
+          "llm": 55,
+          "rerank": 25.7,
+          "cap": 100,
+          "final": 56
+        },
+        {
+          "job": "机器人算法工程师（产品部）",
+          "rule": 76,
+          "llm": 60,
+          "rerank": 12.0,
+          "cap": 100,
+          "final": 52
+        },
+        {
+          "job": "大模型算法工程师（技术部）",
+          "rule": 73,
+          "llm": 42,
+          "rerank": 32.1,
+          "cap": 100,
+          "final": 51
+        },
+        {
+          "job": "推荐算法工程师（技术部）",
+          "rule": 63,
+          "llm": 38,
+          "rerank": 12.7,
+          "cap": 100,
+          "final": 40
+        },
+        {
+          "job": "量子计算研究员（技术部）",
+          "rule": 40,
+          "llm": 18,
+          "rerank": 24.8,
+          "cap": 40,
+          "final": 29
+        },
+        {
+          "job": "AI Agent工程师（产品部）",
+          "rule": 40,
+          "llm": 28,
+          "rerank": 10.5,
+          "cap": 40,
+          "final": 28
+        },
+        {
+          "job": "AI安全研究员（技术部）",
+          "rule": 40,
+          "llm": 22,
+          "rerank": 8.3,
+          "cap": 40,
+          "final": 25
+        }
+      ]
+    },
+    "R004": {
+      "truth": "AI产品经理",
+      "jobs": [
+        {
+          "job": "AI产品经理",
+          "rule": 78,
+          "llm": 90,
+          "rerank": 12.4,
+          "cap": 100,
+          "final": 62
+        },
+        {
+          "job": "数据分析师",
+          "rule": 59,
+          "llm": 68,
+          "rerank": 52.7,
+          "cap": 100,
+          "final": 60
+        },
+        {
+          "job": "AI Agent工程师",
+          "rule": 40,
+          "llm": 58,
+          "rerank": 10.3,
+          "cap": 40,
+          "final": 36
+        },
+        {
+          "job": "财务分析师",
+          "rule": 40,
+          "llm": 42,
+          "rerank": 17.2,
+          "cap": 40,
+          "final": 34
+        },
+        {
+          "job": "NLP算法工程师",
+          "rule": 40,
+          "llm": 28,
+          "rerank": 30.4,
+          "cap": 40,
+          "final": 34
+        },
+        {
+          "job": "视频算法工程师",
+          "rule": 40,
+          "llm": 30,
+          "rerank": 18.6,
+          "cap": 40,
+          "final": 31
+        },
+        {
+          "job": "量化交易研究员",
+          "rule": 40,
+          "llm": 30,
+          "rerank": 18.2,
+          "cap": 40,
+          "final": 30
+        },
+        {
+          "job": "AI安全研究员",
+          "rule": 40,
+          "llm": 28,
+          "rerank": 13.6,
+          "cap": 40,
+          "final": 28
+        },
+        {
+          "job": "用户研究员",
+          "rule": 40,
+          "llm": 28,
+          "rerank": 5.5,
+          "cap": 40,
+          "final": 26
+        },
+        {
+          "job": "法务合规专员",
+          "rule": 25,
+          "llm": 28,
+          "rerank": 4.5,
+          "cap": 25,
+          "final": 20
+        }
+      ]
+    },
+    "R005": {
+      "truth": "数据分析师",
+      "jobs": [
+        {
+          "job": "数据分析师（技术部）",
+          "rule": 90,
+          "llm": 96,
+          "rerank": 97.9,
+          "cap": 100,
+          "final": 94
+        },
+        {
+          "job": "财务分析师（技术部）",
+          "rule": 77,
+          "llm": 29,
+          "rerank": 2.6,
+          "cap": 100,
+          "final": 40
+        },
+        {
+          "job": "量化交易研究员（技术部）",
+          "rule": 50,
+          "llm": 22,
+          "rerank": 8.2,
+          "cap": 60,
+          "final": 29
+        },
+        {
+          "job": "行业研究员（技术部）",
+          "rule": 40,
+          "llm": 29,
+          "rerank": 14.0,
+          "cap": 40,
+          "final": 29
+        },
+        {
+          "job": "用户研究员（技术部）",
+          "rule": 40,
+          "llm": 28,
+          "rerank": 12.1,
+          "cap": 40,
+          "final": 28
+        },
+        {
+          "job": "大模型算法工程师（技术部）",
+          "rule": 40,
+          "llm": 24,
+          "rerank": 16.2,
+          "cap": 40,
+          "final": 28
+        },
+        {
+          "job": "AI Agent工程师（产品部）",
+          "rule": 40,
+          "llm": 28,
+          "rerank": 4.6,
+          "cap": 40,
+          "final": 26
+        },
+        {
+          "job": "视频算法工程师（技术部）",
+          "rule": 40,
+          "llm": 23,
+          "rerank": 8.9,
+          "cap": 40,
+          "final": 26
+        },
+        {
+          "job": "推荐算法工程师（技术部）",
+          "rule": 25,
+          "llm": 60,
+          "rerank": 58.8,
+          "cap": 25,
+          "final": 25
+        },
+        {
+          "job": "AI安全研究员（技术部）",
+          "rule": 40,
+          "llm": 20,
+          "rerank": 4.5,
+          "cap": 40,
+          "final": 23
+        }
+      ]
+    },
+    "R006": {
+      "truth": "UX设计师",
+      "jobs": [
+        {
+          "job": "UX设计师",
+          "rule": 83,
+          "llm": 92,
+          "rerank": 99.6,
+          "cap": 100,
+          "final": 91
+        },
+        {
+          "job": "品牌设计师",
+          "rule": 70,
+          "llm": 38,
+          "rerank": 55.8,
+          "cap": 100,
+          "final": 56
+        },
+        {
+          "job": "AI产品经理",
+          "rule": 25,
+          "llm": 45,
+          "rerank": 56.4,
+          "cap": 25,
+          "final": 25
+        },
+        {
+          "job": "视频特效师",
+          "rule": 25,
+          "llm": 30,
+          "rerank": 20.9,
+          "cap": 25,
+          "final": 25
+        },
+        {
+          "job": "用户研究员",
+          "rule": 25,
+          "llm": 50,
+          "rerank": 11.7,
+          "cap": 25,
+          "final": 25
+        },
+        {
+          "job": "插画师",
+          "rule": 25,
+          "llm": 28,
+          "rerank": 6.9,
+          "cap": 25,
+          "final": 20
+        },
+        {
+          "job": "AI安全研究员",
+          "rule": 25,
+          "llm": 18,
+          "rerank": 15.3,
+          "cap": 25,
+          "final": 20
+        },
+        {
+          "job": "计算机视觉算法工程师",
+          "rule": 25,
+          "llm": 18,
+          "rerank": 10.6,
+          "cap": 25,
+          "final": 19
+        },
+        {
+          "job": "视频算法工程师",
+          "rule": 25,
+          "llm": 18,
+          "rerank": 10.4,
+          "cap": 25,
+          "final": 19
+        },
+        {
+          "job": "Flutter移动端开发工程师",
+          "rule": 25,
+          "llm": 18,
+          "rerank": 3.4,
+          "cap": 25,
+          "final": 16
+        }
+      ]
+    },
+    "R007": {
+      "truth": "计算机视觉算法工程师",
+      "jobs": [
+        {
+          "job": "计算机视觉算法工程师（技术部）",
+          "rule": 90,
+          "llm": 93,
+          "rerank": 80.7,
+          "cap": 100,
+          "final": 88
+        },
+        {
+          "job": "视频算法工程师（技术部）",
+          "rule": 86,
+          "llm": 96,
+          "rerank": 80.8,
+          "cap": 100,
+          "final": 87
+        },
+        {
+          "job": "NLP算法工程师（技术部）",
+          "rule": 90,
+          "llm": 66,
+          "rerank": 54.6,
+          "cap": 100,
+          "final": 72
+        },
+        {
+          "job": "大模型算法工程师（技术部）",
+          "rule": 83,
+          "llm": 78,
+          "rerank": 43.0,
+          "cap": 100,
+          "final": 70
+        },
+        {
+          "job": "自动驾驶感知算法工程师（技术部）",
+          "rule": 86,
+          "llm": 68,
+          "rerank": 32.6,
+          "cap": 100,
+          "final": 65
+        },
+        {
+          "job": "机器人算法工程师（产品部）",
+          "rule": 83,
+          "llm": 28,
+          "rerank": 23.2,
+          "cap": 100,
+          "final": 49
+        },
+        {
+          "job": "量化交易研究员（技术部）",
+          "rule": 57,
+          "llm": 28,
+          "rerank": 17.6,
+          "cap": 60,
+          "final": 36
+        },
+        {
+          "job": "AI Agent工程师（产品部）",
+          "rule": 40,
+          "llm": 62,
+          "rerank": 4.9,
+          "cap": 40,
+          "final": 36
+        },
+        {
+          "job": "量子计算研究员（技术部）",
+          "rule": 40,
+          "llm": 25,
+          "rerank": 10.9,
+          "cap": 40,
+          "final": 27
+        },
+        {
+          "job": "AI安全研究员（技术部）",
+          "rule": 40,
+          "llm": 27,
+          "rerank": 4.4,
+          "cap": 40,
+          "final": 25
+        }
+      ]
+    },
+    "R008": {
+      "truth": "法务合规专员",
+      "jobs": [
+        {
+          "job": "法务合规专员（技术部）",
+          "rule": 86,
+          "llm": 93,
+          "rerank": 99.3,
+          "cap": 100,
+          "final": 92
+        },
+        {
+          "job": "AI Agent工程师（产品部）",
+          "rule": 40,
+          "llm": 23,
+          "rerank": 64.7,
+          "cap": 40,
+          "final": 40
+        },
+        {
+          "job": "AI安全研究员（技术部）",
+          "rule": 40,
+          "llm": 28,
+          "rerank": 46.7,
+          "cap": 40,
+          "final": 38
+        },
+        {
+          "job": "NLP算法工程师（技术部）",
+          "rule": 40,
+          "llm": 21,
+          "rerank": 28.6,
+          "cap": 40,
+          "final": 31
+        },
+        {
+          "job": "机器人算法工程师（产品部）",
+          "rule": 40,
+          "llm": 20,
+          "rerank": 26.6,
+          "cap": 40,
+          "final": 30
+        },
+        {
+          "job": "视频算法工程师（技术部）",
+          "rule": 40,
+          "llm": 22,
+          "rerank": 19.2,
+          "cap": 40,
+          "final": 28
+        },
+        {
+          "job": "自动驾驶感知算法工程师（技术部）",
+          "rule": 40,
+          "llm": 20,
+          "rerank": 17.2,
+          "cap": 40,
+          "final": 27
+        },
+        {
+          "job": "量子计算研究员（技术部）",
+          "rule": 40,
+          "llm": 20,
+          "rerank": 12.1,
+          "cap": 40,
+          "final": 26
+        },
+        {
+          "job": "量化交易研究员（技术部）",
+          "rule": 40,
+          "llm": 20,
+          "rerank": 8.7,
+          "cap": 40,
+          "final": 25
+        },
+        {
+          "job": "AI产品经理（产品部）",
+          "rule": 25,
+          "llm": 23,
+          "rerank": 41.2,
+          "cap": 25,
+          "final": 25
+        }
+      ]
+    },
+    "R009": {
+      "truth": "大模型算法工程师",
+      "jobs": [
+        {
+          "job": "大模型算法工程师（技术部）",
+          "rule": 90,
+          "llm": 98,
+          "rerank": 91.4,
+          "cap": 100,
+          "final": 93
+        },
+        {
+          "job": "NLP算法工程师（技术部）",
+          "rule": 90,
+          "llm": 96,
+          "rerank": 83.6,
+          "cap": 100,
+          "final": 90
+        },
+        {
+          "job": "视频算法工程师（技术部）",
+          "rule": 60,
+          "llm": 42,
+          "rerank": 37.1,
+          "cap": 60,
+          "final": 48
+        },
+        {
+          "job": "AI安全研究员（技术部）",
+          "rule": 40,
+          "llm": 78,
+          "rerank": 32.7,
+          "cap": 40,
+          "final": 40
+        },
+        {
+          "job": "AI Agent工程师（产品部）",
+          "rule": 40,
+          "llm": 66,
+          "rerank": 3.3,
+          "cap": 40,
+          "final": 37
+        },
+        {
+          "job": "量子计算研究员（技术部）",
+          "rule": 40,
+          "llm": 25,
+          "rerank": 31.0,
+          "cap": 40,
+          "final": 33
+        },
+        {
+          "job": "计算机视觉算法工程师（技术部）",
+          "rule": 40,
+          "llm": 29,
+          "rerank": 21.9,
+          "cap": 40,
+          "final": 31
+        },
+        {
+          "job": "量化交易研究员（技术部）",
+          "rule": 40,
+          "llm": 25,
+          "rerank": 5.9,
+          "cap": 40,
+          "final": 25
+        },
+        {
+          "job": "自动驾驶感知算法工程师（技术部）",
+          "rule": 40,
+          "llm": 25,
+          "rerank": 5.6,
+          "cap": 40,
+          "final": 25
+        },
+        {
+          "job": "机器人算法工程师（产品部）",
+          "rule": 40,
+          "llm": 25,
+          "rerank": 3.5,
+          "cap": 40,
+          "final": 25
+        }
+      ]
+    },
+    "R010": {
+      "truth": "网络运维工程师",
+      "jobs": [
+        {
+          "job": "网络运维工程师（技术部）",
+          "rule": 90,
+          "llm": 95,
+          "rerank": 99.7,
+          "cap": 100,
+          "final": 94
+        },
+        {
+          "job": "NLP算法工程师（技术部）",
+          "rule": 40,
+          "llm": 45,
+          "rerank": 37.7,
+          "cap": 40,
+          "final": 40
+        },
+        {
+          "job": "通信协议工程师（技术部）",
+          "rule": 40,
+          "llm": 55,
+          "rerank": 64.5,
+          "cap": 40,
+          "final": 40
+        },
+        {
+          "job": "量子计算研究员（技术部）",
+          "rule": 40,
+          "llm": 40,
+          "rerank": 35.1,
+          "cap": 40,
+          "final": 39
+        },
+        {
+          "job": "AI安全研究员（技术部）",
+          "rule": 40,
+          "llm": 40,
+          "rerank": 34.6,
+          "cap": 40,
+          "final": 38
+        },
+        {
+          "job": "AI Agent工程师（产品部）",
+          "rule": 40,
+          "llm": 45,
+          "rerank": 26.6,
+          "cap": 40,
+          "final": 37
+        },
+        {
+          "job": "量化交易研究员（技术部）",
+          "rule": 40,
+          "llm": 40,
+          "rerank": 12.5,
+          "cap": 40,
+          "final": 32
+        },
+        {
+          "job": "视频算法工程师（技术部）",
+          "rule": 40,
+          "llm": 40,
+          "rerank": 13.3,
+          "cap": 40,
+          "final": 32
+        },
+        {
+          "job": "自动驾驶感知算法工程师（技术部）",
+          "rule": 40,
+          "llm": 40,
+          "rerank": 10.8,
+          "cap": 40,
+          "final": 31
+        },
+        {
+          "job": "Flutter移动端开发工程师（技术部）",
+          "rule": 25,
+          "llm": 30,
+          "rerank": 3.2,
+          "cap": 25,
+          "final": 20
+        }
+      ]
+    }
+  }
+}

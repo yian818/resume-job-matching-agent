@@ -34,8 +34,11 @@ llm = ChatOpenAI(
     model=os.getenv("MODEL_NAME"),
     base_url=os.getenv("OPENAI_BASE_URL"),
     api_key=os.getenv("OPENAI_API_KEY"),
-    temperature=0.1
+    temperature=float(os.getenv("LLM_TEMPERATURE", "0.1")),
 )
+
+# P13：LLM打分集成次数（1=关闭，与旧行为完全一致；>1=多数表决降噪）
+SCORE_RUNS = max(1, int(os.getenv("SCORE_RUNS", "1") or 1))
 
 
 # 定义简历结构化输出模型
@@ -159,6 +162,44 @@ def _normalize_job_title(title: str) -> str:
     直接拿它查 job_info_map 会查不到，融合就被绕过。这里物理剥掉后缀。
     """
     return title.split("（")[0].strip()
+
+
+def _score_with_ensemble(structured_llm, prompt: str, runs: int):
+    """
+    P13：LLM 打分跑 runs 次，按岗位取**中位数**分，压掉采样噪声。
+
+    只聚合 LLM 分——规则/重排/职业身份本身是确定性计算，不需要集成。
+    runs=1 时行为与原来完全一致（默认），集成是可选降噪模式。
+
+    为什么取中位数而不是均值：偶发一次离谱高分/低分不会把结果拉偏。
+    """
+    runs = max(1, int(runs))
+    if runs == 1:
+        return structured_llm.invoke(prompt)
+
+    per_run = [structured_llm.invoke(prompt) for _ in range(runs)]
+
+    # 按裸标题合并（LLM 可能带部门后缀，归一后同一岗位才能聚合）
+    buckets = {}
+    for r in per_run:
+        for m in r.matches:
+            key = _normalize_job_title(m.job_title)
+            buckets.setdefault(key, []).append(m)
+
+    merged = []
+    for items in buckets.values():
+        scores = sorted(m.score for m in items)
+        med = scores[len(scores) // 2]
+        # 取最接近中位数的那个理由，保证理由与分数同源
+        closest = min(items, key=lambda m: abs(m.score - med))
+        merged.append(JobMatchScore(
+            job_title=closest.job_title,
+            score=med,
+            reason=closest.reason,
+        ))
+
+    logger.info(f"P13集成打分：{runs} 次调用，聚合 {len(merged)} 个岗位（中位数）")
+    return JobMatchResult(matches=merged)
 
 
 def _fuse_scores(matches, resume_info, job_info_map):
@@ -286,7 +327,7 @@ def match_jobs_node(state: AgentState) -> AgentState:
 
     try:
         structured_llm = llm.with_structured_output(JobMatchResult)
-        result = structured_llm.invoke(prompt)
+        result = _score_with_ensemble(structured_llm, prompt, SCORE_RUNS)  # P13：可选中位数集成
         # 融合规则分 + LLM分 + 硬上限，然后按融合分降序
         state['job_scores'] = _fuse_scores(result.matches, resume_info, job_info_map)
         _apply_rerank()   # A3：cross-encoder 三信号融合重排

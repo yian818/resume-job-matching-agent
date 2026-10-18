@@ -8,6 +8,9 @@ main_api.py - FastAPI 服务（P11 工程化）
 鉴权：Authorization: Bearer <API_TOKEN>（API_TOKEN 未配置时本地开发放行）
 """
 import os
+import json
+import sys
+import threading
 import logging
 from typing import Optional
 
@@ -23,6 +26,11 @@ from scoring_rules import compute_rule_score, hard_cap, career_match_score
 from explain import build_explanation
 from database import get_all_jobs
 from state import AgentState
+
+# P13 在线评测面板：复用评测缓存模块（eval/ 不在包路径里，手动加）
+EVAL_DIR = os.path.join(os.path.dirname(__file__), "eval")
+sys.path.insert(0, EVAL_DIR)
+from eval_cache import build_cache, simulate, CACHE_PATH  # noqa: E402
 
 load_dotenv()
 logger = logging.getLogger(__name__)
@@ -213,10 +221,91 @@ def health():
     return {"status": "ok", "message": "Agent 服务运行中"}
 
 
+# ===== P13 在线评测面板 =====
+# 缓存构建是长任务（全量 50 份），放后台线程；面板轮询状态
+_ev_builder = {"lock": threading.Lock(), "running": False}
+
+
+def _read_stability(tag: str):
+    """读稳定性评测 JSON 报告（eval/stability_<tag>.json）"""
+    p = os.path.join(EVAL_DIR, f"stability_{tag}.json")
+    if not os.path.exists(p):
+        return None
+    return json.loads(open(p, encoding="utf-8").read())
+
+
+@app.get("/api/eval/status", summary="评测面板状态（无需鉴权）")
+def eval_status():
+    has_cache = CACHE_PATH.exists()
+    cache_n = 0
+    config = {}
+    built_at = None
+    if has_cache:
+        try:
+            cache = json.loads(CACHE_PATH.read_text(encoding="utf-8"))
+            cache_n = len(cache.get("cases", {}))
+            config = cache.get("config", {})
+            built_at = cache.get("built_at")
+        except Exception:
+            pass
+    return {
+        "has_cache": has_cache,
+        "cache_n": cache_n,
+        "total": 50,
+        "building": _ev_builder["running"],
+        "built_at": built_at,
+        "config": config,
+    }
+
+
+@app.get("/api/eval/simulate", summary="权重模拟：调权重→MRR/NDCG 即时刷新（需鉴权）")
+def eval_simulate(w_rule: float = 0.4, w_llm: float = 0.3, w_rerank: float = 0.3,
+                  use_cap: int = 1, _: bool = Depends(verify_token)):
+    if not CACHE_PATH.exists():
+        raise HTTPException(status_code=404, detail="评测缓存未构建，请先点【构建评测缓存】")
+    try:
+        cache = json.loads(CACHE_PATH.read_text(encoding="utf-8"))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"缓存读取失败：{e}")
+    return simulate(cache, w_rule=w_rule, w_llm=w_llm, w_rerank=w_rerank,
+                    use_cap=bool(use_cap))
+
+
+@app.post("/api/eval/build", summary="后台构建评测缓存（需鉴权）")
+def eval_build(limit: int = 50, force: bool = True, _: bool = Depends(verify_token)):
+    with _ev_builder["lock"]:
+        if _ev_builder["running"]:
+            raise HTTPException(status_code=409, detail="正在构建中，请稍候")
+        _ev_builder["running"] = True
+
+    def _run():
+        try:
+            build_cache(limit=max(1, min(limit, 50)), force=force)
+        finally:
+            _ev_builder["running"] = False
+
+    threading.Thread(target=_run, daemon=True).start()
+    return {"started": True, "limit": limit,
+            "detail": "构建已开始在后台执行，完成后状态自动更新"}
+
+
+@app.get("/api/eval/stability", summary="稳定性评测报告（无需鉴权）")
+def eval_stability(tag: str = "before"):
+    rep = _read_stability(tag)
+    if rep is not None:
+        return rep
+    return _read_stability("after") or {"tag": tag, "error": f"stability_{tag}.json 不存在"}
+
+
 # ===== 前端 =====
 @app.get("/", include_in_schema=False)
 def index():
     return FileResponse(os.path.join(STATIC_DIR, "index.html"))
+
+
+@app.get("/eval", include_in_schema=False)
+def eval_page():
+    return FileResponse(os.path.join(STATIC_DIR, "eval.html"))
 
 
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")

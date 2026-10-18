@@ -6,6 +6,8 @@ __pycache__/
 agent.log
 output_*.log
 eval/output_*.log
+eval/signal_cache.json
+eval/stability_*.json
 .env
 .venv/
 venv/

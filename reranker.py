@@ -57,6 +57,22 @@ def build_job_text(job: dict) -> str:
     )
 
 
+# 三信号融合权重（P13：抽成纯函数，生产与在线评测面板共用同一个公式）
+# final = min(round(规则×w_rule + LLM×w_llm + 重排×w_rerank), 硬上限)
+DEFAULT_FUSION = {"rule": 0.4, "llm": 0.3, "rerank": 0.3}
+
+
+def fuse_final(rule: float, llm: float, rerank_100: float, cap: int,
+               w: dict | None = None) -> int:
+    """
+    三信号融合 + 硬上限兜底（确定性纯函数，无副作用）。
+    面板模拟调权重时调用的是这个函数，保证"所见即生产"。
+    """
+    w = w or DEFAULT_FUSION
+    total = w["rule"] * rule + w["llm"] * llm + w["rerank"] * rerank_100
+    return int(min(round(total), cap))
+
+
 def rerank_scores(job_scores: list, resume_info: dict, job_info_map: dict) -> list:
     """
     对融合后的岗位分数，用 cross-encoder 语义分做三信号融合。
@@ -107,8 +123,8 @@ def rerank_scores(job_scores: list, resume_info: dict, job_info_map: dict) -> li
         cap = hard_cap(job, resume_info)
         llm = s.get("llm_score", s["score"])
 
-        # 三信号融合 + 硬上限兜底
-        final = int(min(round(0.4 * rule + 0.3 * llm + 0.3 * rerank_100), cap))
+        # 三信号融合 + 硬上限兜底（与在线评测面板共用 fuse_final）
+        final = fuse_final(rule, llm, rerank_100, cap)
 
         s["rerank_score"] = float(rerank_score)
         s["final_score"] = final
