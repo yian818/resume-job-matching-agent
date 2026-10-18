@@ -95,13 +95,16 @@ def extract_resume_node(state: AgentState) -> AgentState:
     # 覆盖不到的，直接从原文补回——不依赖 LLM 的自觉。
     def _extract_literal_skills(text: str) -> list:
         found = []
-        for pat in (r"技能：(.+)", r"技术栈：(.+)"):
+        for pat in (r"技能：([^\n]+)", r"技术栈：([^\n]+)"):
             m = re.search(pat, text)
             if not m:
                 continue
-            for s in re.split(r"[,，、]", m.group(1)):
+            # 只取技能行的第一个句子，避免把后面的「项目：…」也吞进来
+            line = re.split(r"[。；;]", m.group(1))[0]
+            for s in re.split(r"[,，、]", line):
                 s = re.sub(r"[（(].*?[)）]", "", s.strip()).strip().rstrip("。")
-                if s:
+                # 过滤长句 / 段落标签，防止把整句话当技能
+                if s and len(s) <= 20 and "项目" not in s and "：" not in s:
                     found.append(s)
         return found
 

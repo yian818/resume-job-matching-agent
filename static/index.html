@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ResumeMatch AI · 简历岗位智能匹配</title>
+  <meta name="description" content="LangGraph + RAG + 规则引擎 + cross-encoder 重排的简历岗位匹配 Agent。Top-1 98% · MRR 0.99。">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+SC:wght@400;500;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/styles.css">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23070708'/%3E%3Cpath d='M9 22V10l7 8 7-8v12' stroke='%235eead4' stroke-width='2.4' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+</head>
+<body>
+
+<div class="aurora"></div>
+<div class="grid-overlay"></div>
+
+<div class="shell">
+
+  <!-- Nav -->
+  <nav class="nav">
+    <div class="brand">
+      <div class="brand-mark">RM</div>
+      <span>ResumeMatch <span style="color:var(--accent)">AI</span></span>
+    </div>
+    <div class="nav-actions">
+      <div class="token-field" id="tokenField">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+        <input id="tokenInput" type="password" placeholder="API Token（可选）" autocomplete="off">
+      </div>
+      <button class="icon-btn" id="themeBtn" title="切换主题">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4.5"/><path d="M12 2v2m0 16v2M4.9 4.9l1.4 1.4m11.4 11.4 1.4 1.4M2 12h2m16 0h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+      </button>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <header class="hero">
+    <div class="eyebrow"><span class="dot"></span> LangGraph · RAG · 规则引擎 · Cross-Encoder 重排</div>
+    <h1>把简历，匹配给<span class="gradient-text">最合适的岗位</span></h1>
+    <p>四信号融合打分（规则 / LLM / 语义重排 / 职业身份），硬上限兜底。评测集 50 份简历全客观标答，Top-1 98% · MRR 0.99。</p>
+    <div class="stats">
+      <div class="stat"><b>98%</b><span>Top-1 准确率</span></div>
+      <div class="stat"><b>100%</b><span>Top-3 召回</span></div>
+      <div class="stat"><b>0.99</b><span>MRR 排序质量</span></div>
+      <div class="stat"><b>54</b><span>岗位知识库</span></div>
+    </div>
+  </header>
+
+  <!-- Input panel -->
+  <section class="card panel">
+    <div class="panel-head">
+      <div>
+        <div class="panel-title">粘贴简历</div>
+        <div class="panel-sub">支持直接输入或拖入文件，系统自动抽取结构化信息并匹配岗位</div>
+      </div>
+    </div>
+
+    <div class="dropzone" id="dropzone">
+      <textarea id="resumeInput" placeholder="在这里粘贴简历文本…&#10;&#10;例：&#10;张明，男，28岁。学历：北京大学，计算机科学，硕士。&#10;工作经历：2020-2023 字节跳动 算法工程师，负责推荐系统优化，Python、PyTorch、Transformer。&#10;技能：Python, PyTorch, LangGraph, RAG, LLM, Prompt Engineering。&#10;项目：基于LangGraph的AI客服Agent，日均处理5000+请求。"></textarea>
+      <div class="drop-hint">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 3v12m0 0-4-4m4 4 4-4"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
+        支持拖拽 .txt / .md 文件
+      </div>
+    </div>
+
+    <div class="toolbar">
+      <div class="toolbar-left">
+        <button class="btn btn-ghost" id="sampleBtn" type="button">填入示例简历</button>
+        <label class="btn" style="font-weight:500">
+          <input type="checkbox" id="adviceToggle" style="accent-color:var(--accent)">
+          &nbsp;附优化建议 & 模拟面试
+        </label>
+      </div>
+      <button class="btn btn-primary" id="matchBtn">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h7l-1 8 10-12h-7l1-8Z"/></svg>
+        开始匹配
+      </button>
+    </div>
+  </section>
+
+  <!-- Results -->
+  <section id="results">
+    <div class="section-label">候选人画像</div>
+    <div class="card candidate" id="candidateCard" style="display:none"></div>
+
+    <div class="section-label">岗位匹配排行</div>
+    <div class="matches" id="matchesList"></div>
+
+    <div class="tabs" id="adviceTabs" style="display:none">
+      <button class="tab active" data-panel="advice">简历优化建议</button>
+      <button class="tab" data-panel="interview">模拟面试题</button>
+      <button class="tab" data-panel="debug">信号明细</button>
+    </div>
+    <div class="card tab-panel active" id="panel-advice"></div>
+    <div class="card tab-panel" id="panel-interview"></div>
+    <div class="card tab-panel" id="panel-debug"></div>
+  </section>
+
+  <footer class="footer">
+    <span>ResumeMatch AI · 简历-岗位匹配 Agent · P11 工程化</span>
+    <span><code>POST /api/v1/match</code> · Bearer Token</span>
+  </footer>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<svg width="0" height="0" style="position:absolute">
+  <defs>
+    <linearGradient id="scoreGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#5eead4"/>
+      <stop offset="100%" stop-color="#818cf8"/>
+    </linearGradient>
+  </defs>
+</svg>
+
+<script src="/static/app.js"></script>
+</body>
+</html>

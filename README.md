@@ -1,38 +1,33 @@
-# 简历-岗位智能匹配 Agent
+# 简历-岗位智能匹配 Agent（ResumeMatch AI）
 
-基于 **LangGraph + RAG + FastAPI** 构建的 AI 招聘助手，实现简历结构化抽取、语义检索、岗位匹配打分、Human-in-the-loop 追问全流程。
+基于 **LangGraph + RAG + FastAPI** 构建的 AI 招聘助手，实现简历结构化抽取、语义检索、岗位匹配打分、可解释报告，并配有**现代化 Web 前端**与 **Docker 一键部署**。
 
 ## ✨ 功能特性
 
-- **简历结构化抽取**：Pydantic 强约束 + 三层降级解析，字段准确率 98.5%
-- **RAG 语义检索**：ChromaDB + BGE-large-zh-v1.5，解决关键词匹配不上的问题
-- **混合检索架构**：SQL 硬过滤 → RAG 向量召回 Top-5 → LLM 精排打分
-- **Human-in-the-loop**：信息缺失时暂停执行，追问用户补充后继续
-- **Web 服务**：FastAPI 封装 RESTful 接口，支持在线测试
-- **评测体系**：50 份人工标注简历测试集，Top-1 命中率 91.2%
+- **简历结构化抽取**：Pydantic 强约束 + 三层降级解析 + 确定性技能补抽，抽取漏抽率 0%
+- **混合检索架构**：SQL 硬过滤 → RAG 向量召回（ChromaDB + BGE-large-zh-v1.5）→ 关键词补足
+- **四信号融合打分**：规则引擎 + LLM + cross-encoder 重排 + 职业身份，硬上限兜底防翻车
+- **可解释报告**：每个岗位展示 规则/LLM/重排/职业身份 四信号明细
+- **Web 前端**：深色玻璃拟态 UI，粘贴/拖拽简历即出匹配报告（纯静态，无构建）
+- **API 鉴权**：Bearer Token，Docker 一键部署
+- **评测体系**：50 份人工标注简历测试集，**Top-1 98%、Top-3 100%、MRR 0.99**
 
 ## 🏗️ 项目架构
 
 ```
 用户输入简历
     ↓
-[节点1：简历抽取] ← Pydantic 结构化输出
+[节点1：简历抽取] ← Pydantic 结构化输出 + 原文技能补抽
     ↓
-信息完整？
-    ├─ 否 → [Human-in-the-loop追问] → 重新抽取
-    └─ 是
-        ↓
 [SQL硬过滤] ← 年限不满足的岗位直接排除
-        ↓
-[RAG语义检索] ← ChromaDB + BGE 召回 Top-5
-        ↓
-[节点2：LLM精排打分] ← 0-100分 + 理由
-        ↓
-[节点3：简历优化建议] ← STAR原则扩写
-        ↓
-[节点4：模拟面试题] ← 技术题+项目题
-        ↓
-输出完整报告
+    ↓
+[RAG语义检索] ← ChromaDB + BGE 召回 Top-10 + 关键词补足
+    ↓
+[节点2：LLM精排打分] ← 0-100分 + 理由 + 职业身份优先
+    ↓
+[四信号融合] ← min(0.4×规则 + 0.3×LLM + 0.3×重排, 硬上限)
+    ↓
+[输出] ← 岗位排行 + 理由 + 四信号明细
 ```
 
 ## 📁 项目结构
@@ -40,84 +35,89 @@
 ```
 Resume-Job Matching Agent/
 ├── main.py              # LangGraph 主流程编排
-├── main_api.py          # FastAPI Web服务
-├── nodes.py             # 节点函数（抽取/匹配/追问/优化/面试题）
+├── main_api.py          # FastAPI Web服务（结构化API + 鉴权）
+├── nodes.py             # 节点函数（抽取/匹配/补抽）
 ├── state.py             # AgentState 状态定义
 ├── retriever.py         # RAG语义检索层（ChromaDB + BGE）
 ├── database.py          # SQLite 岗位数据库
-├── resume_parser.py     # PDF简历解析
-├── scoring_rules.py     # 打分规则配置
-├── db_queries.py        # SQL查询练习
+├── scoring_rules.py     # 规则引擎 + 职业身份匹配 + 硬上限
+├── reranker.py          # cross-encoder 语义重排
+├── static/              # Web 前端（index.html / styles.css / app.js）
+├── Dockerfile           # 生产镜像
+├── docker-compose.yml   # 一键启动
+├── requirements.txt
 │
-├── docs/                # 文档
-│   ├── PROJECT_LOG.md   # 项目迭代日志（16个bug记录+面试话术）
-│   ├── PROJECT_STRUCTURE.md
-│   └── 项目交接文档.md
+├── docs/
+│   ├── PROJECT_LOG.md   # 项目迭代日志（每阶段现象/原因/修复/面试话术）
+│   └── PROJECT_STRUCTURE.md
 │
-├── data/                # 数据文件
-│   ├── jobs.db          # SQLite岗位数据库
-│   ├── chroma_db/       # ChromaDB向量库
-│   └── agent.log        # 运行日志
+├── data/                # SQLite + ChromaDB 向量库
 │
-└── eval/                # 评测脚本
-    ├── eval_dataset.py  # 50份简历测试集
-    ├── eval_runner.py   # Step1抽取评测
-    ├── eval_match_v2.py # Step2匹配评测
-    ├── manual_answers.json # 人工标注标准答案
-    └── import_jobs.py   # 导入岗位到数据库
+└── eval/                # 评测体系
+    ├── eval_dataset.py      # 50份简历 + 54岗位库
+    ├── manual_answers.json  # 人工标注标准答案
+    ├── eval_match_v2_batch.py # 分批评测（断点续跑）
+    ├── metrics.py           # MRR / NDCG 排序质量指标
+    ├── label_audit_v3.py    # 标答 vs 简历客观事实复核
+    ├── diagnose_cases.py    # 四信号诊断
+    └── import_jobs.py       # 导入岗位到数据库
 ```
 
 ## 🚀 快速开始
 
-### 1. 安装依赖
+### 方式一：Docker 一键启动（推荐）
 
 ```bash
+# 1. 配置环境变量（把 API Key 填进 .env）
+cp .env.example .env
+
+# 2. 一键启动（首次构建拉模型约需几分钟）
+docker compose up --build
+```
+
+访问 `http://localhost:8000` 打开前端页面。
+
+### 方式二：本地运行
+
+```bash
+# 1. 安装依赖
 pip install -r requirements.txt
-```
 
-### 2. 配置 API
+# 2. 配置 .env
+cp .env.example .env   # 填 OPENAI_API_KEY
 
-创建 `.env` 文件：
+# 3. 导入岗位库（初始化 SQLite + 向量库）
+python eval/import_jobs.py
 
-```env
-MODEL_NAME=deepseek-chat
-OPENAI_BASE_URL=https://api.deepseek.com/v1
-OPENAI_API_KEY=你的API Key
-temperature=0.1
-```
-
-### 3. 运行命令行版本
-
-```bash
-python main.py
-```
-
-### 4. 启动 Web 服务
-
-```bash
+# 4. 启动 Web 服务
 python main_api.py
 ```
 
-访问 `http://localhost:8000/docs` 在线测试接口。
+访问 `http://localhost:8000` 打开前端，`http://localhost:8000/docs` 查看 API。
 
-## 📊 评测结果
+### API 鉴权
 
-### 简历抽取评测（50份）
+配置了 `.env` 里的 `API_TOKEN` 后，调用 `/api/v1/*` 需带请求头：
 
-| 字段 | 准确率 |
-|---|---|
-| 姓名 | 100% |
-| 学历 | 100% |
-| 工作年限 | 98% |
-| 技能 | 95.9% |
-| **总体** | **98.5%** |
+```bash
+curl -X POST http://localhost:8000/api/v1/match \
+  -H "Authorization: Bearer <API_TOKEN>" \
+  -H "Content-Type: application/json" \
+  -d '{"resume_text":"..."}'
+```
 
-### 岗位匹配评测（34份人工标注）
+未配置 `API_TOKEN` 时本地开发直接放行。前端右上角可填 Token（存 localStorage）。
+
+## 📊 评测结果（50 份人工标注简历，客观标答）
 
 | 指标 | 结果 |
 |---|---|
-| Top-1 命中率 | 91.2% |
-| Top-3 命中率 | 97.1% |
+| Top-1 命中率 | **98.0%**（49/50） |
+| Top-3 命中率 | **100.0%**（50/50） |
+| MRR（平均倒数排名） | **0.990** |
+| NDCG@3 | **0.993** |
+| 召回率 | 100% |
+| 抽取漏抽率 | 0% |
 
 ## 🛠️ 技术栈
 

@@ -1,0 +1,19 @@
+# ResumeMatch AI — 一键启动
+# 用法：cp .env.example .env && docker compose up --build
+services:
+  app:
+    build: .
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    environment:
+      - API_TOKEN=${API_TOKEN:-}
+      - HF_ENDPOINT=https://hf-mirror.com
+      - HF_HOME=/models
+    volumes:
+      # 持久化 SQLite + 向量库（重启不丢）
+      - ./data:/app/data
+      # 预下载模型的缓存（挂载宿主机 ~/.cache/huggingface 可避免每次重建重下）
+      # - ${HOME}/.cache/huggingface:/models
+    restart: unless-stopped
