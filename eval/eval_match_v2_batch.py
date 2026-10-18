@@ -163,6 +163,24 @@ def main():
         for e in errors:
             print(f"  {e['rid']}: {e['error'][:80]}")
 
+    # P10：本批跑完自动算排序质量指标（MRR / NDCG@k），从日志里解析 rank
+    try:
+        from metrics import parse_rank, dcg_contrib
+
+        _results = []
+        for _line in log_path.read_text(encoding="utf-8").splitlines():
+            _rid, _rank = parse_rank(_line)
+            if _rid is not None:
+                _results.append((_rid, _rank))
+        if _results:
+            _n = len(_results)
+            _mrr = sum(1.0 / r if r >= 1 else 0.0 for _, r in _results) / _n
+            _k = 3
+            _ndcg = sum(dcg_contrib(r, _k) for _, r in _results) / _n
+            print(f"排序质量（P10）：MRR={_mrr:.4f}  NDCG@{_k}={_ndcg:.4f}  （共{_n}份有标答）")
+    except Exception as e:
+        print(f"（排序指标计算失败，可手动跑 eval/metrics.py --log {args.log}）: {e}")
+
 
 if __name__ == "__main__":
     main()
